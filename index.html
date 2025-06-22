@@ -1,296 +1,293 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>سرعة تملك العقار - حاسبة التمويل</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>سرعة تملك العقار – حاسبة التمويل</title>
+
+  <!-- === تنسيق الصفحة === -->
   <style>
-    body {
-      font-family: 'Tajawal', sans-serif;
-      background-color: #f4f6f8;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    header {
-      background-color: #005c48;
-      color: white;
-      padding: 20px;
-    }
-    .container {
-      max-width: 600px;
-      margin: 20px auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    }
-    input, select, button {
-      width: 90%;
-      padding: 10px;
-      margin: 10px 0;
-      font-size: 16px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    button {
-      background-color: #00796b;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #004d40;
-    }
-    footer {
-      font-size: 12px;
-      color: #666;
-      margin-top: 40px;
-      padding: 10px;
-    }
-    .fade-in {
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeInMove 0.6s forwards;
-    }
-    @keyframes fadeInMove {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+    body{font-family:'Tajawal',sans-serif;background:#f4f6f8;margin:0;text-align:center}
+    header{background:#005c48;color:#fff;padding:24px 10px}
+    .container{max-width:600px;margin:20px auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 0 15px rgba(0,0,0,.1)}
+    input,select,button{width:90%;padding:10px;margin:10px 0;font-size:16px;border-radius:5px;border:1px solid #ccc}
+    button{background:#00796b;color:#fff;border:none;cursor:pointer}
+    button:hover{background:#004d40}
+    footer{font-size:12px;color:#666;margin-top:40px;padding:10px}
+    .fade-in{opacity:0;transform:translateY(20px);animation:fadeIn .5s forwards}
+    @keyframes fadeIn{to{opacity:1;transform:translateY(0)}}
   </style>
 </head>
 <body>
+
+<!-- === رأس الصفحة === -->
 <header>
   <h1>سرعة تملك العقار والحلول التمويلية</h1>
   <p>حاسبة التمويل التقريبية</p>
 </header>
-<div class="container" id="form-container">
+
+<!-- === منطقة الأسئلة === -->
+<div class="container" id="form">
   <div id="question"></div>
-  <button onclick="nextQuestion()">ابدأ الحسبة</button>
+  <button id="startBtn" onclick="nextQuestion()">ابدأ الحسبة</button>
 </div>
+
+<!-- === تذييل === -->
 <footer>
-  <p>جميع الحقوق محفوظة - سرعة تملك العقار والحلول التمويلية - <span id="datetime"></span></p>
+  <p>© سرعة تملك العقار والحلول التمويلية – <span id="dt"></span></p>
 </footer>
+
+<!-- === تحديث التاريخ === -->
 <script>
-function updateDateTime() {
-  const now = new Date();
-  document.getElementById('datetime').innerText =
-    `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+function tick(){
+  const d=new Date();
+  document.getElementById('dt').textContent=
+    d.toLocaleDateString('ar-SA',{year:'numeric',month:'2-digit',day:'2-digit'})+' '+
+    d.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 }
-setInterval(updateDateTime, 1000);
-updateDateTime();
+setInterval(tick,1000);tick();
 </script>
+
+<!-- === منطق الحاسبة بالكامل === -->
 <script>
+/* ---------------- متغيرات رئيسية ---------------- */
+let answers={},commitments=[],curStep='start',curCommit={};
 
-let answers = {};
-let commitments = [];
-
-function nextQuestion() {
-  askFinanceType();
+/* -------------- إظهار سؤال عام -------------- */
+function show(html){
+  const box=document.getElementById('question');
+  box.innerHTML='<div class="fade-in">'+html+'</div>';
 }
 
+/* -------------- الانتقال للسؤال التالي -------------- */
+function nextQuestion(){
+  if(curStep==='start'){ askFinanceType(); return; }
 
-function askFinanceType() {
-  showQuestion(`
-    <label>نوع التمويل:</label><br>
+  // لا شيء إن لم يكن معرف
+}
+
+/* -------------- الأسئلة الأساسية -------------- */
+function askFinanceType(){
+  curStep='financeType';
+  show(`
+    <label>نوع التمويل</label><br>
     <select id="financeType">
       <option value="تمويل عقاري">تمويل عقاري</option>
       <option value="تمويل شخصي">تمويل شخصي</option>
-    </select>
-    <br><button onclick="saveFinanceType()">التالي</button>
+    </select><br>
+    <button onclick="saveFinanceType()">التالي</button>
   `);
 }
 
-
-function showQuestion(html) {
-  const q = document.getElementById('question');
-  q.innerHTML = `<div class="fade-in">${html}</div>`;
+function saveFinanceType(){
+  answers.financeType=document.getElementById('financeType').value;
+  (answers.financeType==='تمويل عقاري')?askSupported():askSalary();
 }
 
-
-function saveFinanceType() {
-  const ft = document.getElementById('financeType').value;
-  answers.financeType = ft;
-  if (ft === 'تمويل عقاري') {
-    askSupported();
-  } else {
-    askSalary();
-  }
-}
-
-
-function askSupported() {
-  showQuestion(`
+function askSupported(){
+  curStep='supported';
+  show(`
     <label>هل التمويل مدعوم؟</label><br>
     <select id="supported">
       <option value="مدعوم">مدعوم</option>
       <option value="غير مدعوم">غير مدعوم</option>
-    </select>
-    <br><button onclick="saveSupported()">التالي</button>
+    </select><br>
+    <button onclick="saveSupported()">التالي</button>
   `);
 }
-
-
-function saveSupported() {
-  answers.supported = document.getElementById('supported').value;
-  if (answers.supported === 'مدعوم') {
-    askBundle();
-  } else {
-    askSalary();
-  }
+function saveSupported(){
+  answers.supported=document.getElementById('supported').value;
+  (answers.supported==='مدعوم')?askBundle():askSalary();
 }
 
-
-function askBundle() {
-  showQuestion(`
-    <label>هل ترغب في الحصول على دفعة مقدمة من سكني؟</label><br>
+function askBundle(){
+  curStep='bundle';
+  show(`
+    <label>هل ترغب بباقة سكني دفعة مقدمة؟</label><br>
     <select id="bundle">
-      <option value="نعم">نعم</option>
-      <option value="لا">لا</option>
-    </select>
-    <br><button onclick="saveBundle()">التالي</button>
+      <option value="نعم">نعم</option><option value="لا">لا</option>
+    </select><br>
+    <button onclick="saveBundle()">التالي</button>
   `);
 }
+function saveBundle(){ answers.bundle=document.getElementById('bundle').value; askSalary(); }
 
-
-function saveBundle() {
-  answers.bundle = document.getElementById('bundle').value;
-  askSalary();
-}
-
-
-function askSalary() {
-  showQuestion(`
-    <label>كم الراتب الشهري؟</label><br>
-    <input type="number" id="salary">
-    <br><button onclick="saveSalary()">التالي</button>
+function askSalary(){
+  curStep='salary';
+  show(`
+    <label>الراتب الشهري (ريال)</label><br>
+    <input type="number" id="salary"><br>
+    <button onclick="saveSalary()">التالي</button>
   `);
 }
-
-
-function saveSalary() {
-  answers.salary = parseFloat(document.getElementById('salary').value) || 0;
+function saveSalary(){
+  answers.salary=parseFloat(document.getElementById('salary').value)||0;
   askMonths();
 }
-  || 0;
-  commitments.push(currentCommitment);
-  askMoreCommitments();
+
+function askMonths(){
+  curStep='months';
+  const max=answers.financeType==='تمويل عقاري'?360:60;
+  show(`
+    <label>مدة التمويل بالأشهر</label><br>
+    <input type="range" id="months" min="12" max="${max}" value="12" oninput="document.getElementById('mVal').textContent=this.value">
+    <br><span id="mVal">12</span> شهر<br>
+    <button onclick="saveMonths()">التالي</button>
+  `);
+}
+function saveMonths(){ answers.months=parseInt(document.getElementById('months').value); askProfit(); }
+
+function askProfit(){
+  curStep='profit'; 
+  show(`
+    <label>هامش الربح السنوي (%)</label><br>
+    <input type="number" id="profit"><br>
+    <button onclick="saveProfit()">التالي</button>
+  `);
+}
+function saveProfit(){ answers.profit=parseFloat(document.getElementById('profit').value)||0; askHasCommit(); }
+
+function askHasCommit(){
+  curStep='hasCommit';
+  show(`
+    <label>هل لديك التزامات؟</label><br>
+    <select id="hasC"><option>نعم</option><option>لا</option></select><br>
+    <button onclick="saveHasCommit()">التالي</button>
+  `);
+}
+function saveHasCommit(){
+  answers.hasCommit=document.getElementById('hasC').value;
+  (answers.hasCommit==='نعم')?askCommitType():calculate();
 }
 
-function askMoreCommitments() {
-  showQuestion(`
+/* ------------ أسئلة الالتزام المتكرر ------------ */
+function askCommitType(){
+  curStep='cType';
+  show(`
+    <label>نوع الالتزام</label><br>
+    <select id="cType">
+      <option>قرض شخصي</option>
+      <option>قرض سيارة</option>
+      <option>قرض استهلاكي</option>
+    </select><br>
+    <button onclick="saveCommitType()">التالي</button>
+  `);
+}
+function saveCommitType(){
+  curCommit={type:document.getElementById('cType').value};
+  askCommitPayment();
+}
+function askCommitPayment(){
+  curStep='cPay';
+  show(`
+    <label>القسط الشهري (ريال)</label><br>
+    <input type="number" id="cPay"><br>
+    <button onclick="saveCommitPayment()">التالي</button>
+  `);
+}
+function saveCommitPayment(){ curCommit.pay=parseFloat(document.getElementById('cPay').value)||0; askCommitMonths(); }
+function askCommitMonths(){
+  curStep='cMonths';
+  show(`
+    <label>الأشهر المتبقية</label><br>
+    <input type="range" id="cMonths" min="1" max="60" value="12" oninput="document.getElementById('mVal').textContent=this.value">
+    <br><span id="mVal">12</span> شهر<br>
+    <button onclick="saveCommitMonths()">التالي</button>
+  `);
+}
+function saveCommitMonths(){ curCommit.months=parseInt(document.getElementById('cMonths').value);
+  (curCommit.type==='قرض سيارة')?askLastPayQ():finishCommit();
+}
+function askLastPayQ(){
+  curStep='lastQ';
+  show(`
+    <label>هل يوجد دفعة أخيرة؟</label><br>
+    <select id="hasLast"><option>نعم</option><option>لا</option></select><br>
+    <button onclick="saveLastQ()">التالي</button>
+  `);
+}
+function saveLastQ(){
+  (document.getElementById('hasLast').value==='نعم')?askLastPay():curCommit.last=0,finishCommit();
+}
+function askLastPay(){
+  curStep='lastPay';
+  show(`
+    <label>مبلغ الدفعة الأخيرة (ريال)</label><br>
+    <input type="number" id="last"><br>
+    <button onclick="saveLastPay()">التالي</button>
+  `);
+}
+function saveLastPay(){ curCommit.last=parseFloat(document.getElementById('last').value)||0; finishCommit(); }
+
+function finishCommit(){
+  commitments.push(curCommit);
+  askMore();
+}
+function askMore(){
+  curStep='moreC';
+  show(`
     <label>هل لديك التزامات أخرى؟</label><br>
-    <select id="moreCommitments">
-      <option value="نعم">نعم</option>
-      <option value="لا">لا</option>
-    </select>
-    <br><button onclick="saveMoreCommitments()">التالي</button>
+    <select id="more"><option>نعم</option><option>لا</option></select><br>
+    <button onclick="saveMore()">التالي</button>
+  `);
+}
+function saveMore(){
+  (document.getElementById('more').value==='نعم')?askCommitType():calculate();
+}
+
+/* ------------------- الحسبة ------------------- */
+function calculate(){
+  /* معدلات الخصم حسب السياسة الأصلية */
+  let rate= answers.financeType==='تمويل شخصي'?33.33:(answers.salary<15000?55:65);
+  let extra=0;
+  if(answers.financeType==='تمويل عقاري' && answers.supported==='مدعوم' && answers.bundle==='نعم'){
+    extra=answers.salary<10000?150000:100000;
+  }
+  const allowed=answers.salary*rate/100;
+
+  /* خصم الأقساط */
+  let available=allowed;
+  let maxMonths=0,totalInstWith=0;
+  commitments.forEach(c=>{
+    available-=c.pay;
+    const total=c.pay*c.months+(c.last||0);
+    totalInstWith+=total;
+    if(c.months>maxMonths)maxMonths=c.months;
+  });
+  if(available<=0){
+    show('<h3>لا يمكنك الحصول على تمويل بسبب الالتزامات.</h3>');return;
+  }
+
+  const months=answers.months, monthsWithout=months-maxMonths;
+  const totalWithout=allowed*monthsWithout;
+  const grandTotal= totalInstWith + totalWithout;
+  const profitFactor=(months/12)*answers.profit/100+1;
+  const net=grandTotal/profitFactor;
+
+  /* الرسوم */
+  let admin=net*0.01; if(admin>5000)admin=5000;
+  let vat=admin*0.15; if(vat>750)vat=750;
+  const commodity= answers.financeType==='تمويل شخصي'?net*0.01:0;
+  const final=net-admin-vat-commodity+extra;
+
+  show(`
+    <h2>النتيجة:</h2>
+    <p>قسط أول ${maxMonths} شهر: ${available.toFixed(0)} ريال</p>
+    <p>ثم القسط بعد السداد: ${allowed.toFixed(0)} ريال</p>
+    <p>إجمالي التمويل بالأرباح: ${grandTotal.toFixed(0)} ريال</p>
+    <p>التمويل الصافي قبل الرسوم: ${net.toFixed(0)} ريال</p>
+    <p>الرسوم الإدارية: ${admin.toFixed(0)} ريال</p>
+    <p>الضريبة: ${vat.toFixed(0)} ريال</p>
+    ${commodity?`<p>رسوم السلع: ${commodity.toFixed(0)} ريال</p>`:''}
+    ${extra?`<p>دعم حكومي: ${extra.toLocaleString()} ريال</p>`:''}
+    <p><strong>التمويل النهائي: ${final.toFixed(0)} ريال</strong></p>
+    <h3>📞 0506214458 – hlooleqrr.com</h3>
   `);
 }
 
-function saveMoreCommitments() {
-  const more = document.getElementById('moreCommitments').value;
-  if (more === 'نعم') {
-    askCommitmentType();
-  } else {
-    calculateResult();
-  }
-}
-
-// سيتم توليد منطق JavaScript الكامل هنا لاحقًا
+/* بدء العملية */
+nextQuestion();
 </script>
-
 
 </body>
 </html>
-
-<script>
-function calculateResult() {
-  const financeType = answers.financeType;
-  const supported = answers.supported;
-  const bundle = answers.bundle;
-  const salary = answers.salary;
-  const months = financeType === "تمويل شخصي" ? 60 : 360;
-
-  let profitMargin = 6;
-  let deductionRate = 0;
-  let extraSupport = 0;
-  let addCommodityFee = financeType === "تمويل شخصي";
-
-  if (financeType === "تمويل عقاري") {
-    if (supported === "مدعوم") {
-      if (bundle === "نعم") {
-        extraSupport = salary < 10000 ? 150000 : 100000;
-        deductionRate = salary < 15000 ? 55 : 65;
-      } else {
-        deductionRate = salary < 15000 ? 55 : 65;
-      }
-    } else {
-      deductionRate = salary < 15000 ? 55 : 65;
-    }
-  } else {
-    deductionRate = 33.33;
-  }
-
-  let totalCommitment = 0;
-  commitments.forEach(c => {
-    let total = c.amount * c.months;
-    if (c.type === "قرض سيارة" && c.lastPayment > 0) {
-      total += c.lastPayment;
-    }
-    totalCommitment += total;
-  });
-
-  const allowedInstallment = (salary * (deductionRate / 100));
-  let availableInstallment = allowedInstallment;
-
-  commitments.forEach(c => {
-    availableInstallment -= c.amount;
-  });
-
-  if (availableInstallment <= 0) {
-    document.getElementById("question").innerHTML = `
-      <h2>عذرًا</h2>
-      <p>لا يمكنك الحصول على تمويل حاليًا بسبب الالتزامات القائمة.</p>
-      <h3>للتواصل مع سرعة تملك العقار</h3>
-      <p>0506214458 - hlooleqrr.com</p>
-    `;
-    return;
-  }
-
-  const monthsWithCommitment = Math.max(...commitments.map(c => c.months), 0);
-  const monthsWithoutCommitment = months - monthsWithCommitment;
-
-  const totalWithCommitment = availableInstallment * monthsWithCommitment;
-  const totalWithoutCommitment = allowedInstallment * monthsWithoutCommitment;
-  const totalInstallments = totalWithCommitment + totalWithoutCommitment;
-
-  const profitFactor = (months / 12) * (profitMargin / 100) + 1;
-  const netFinance = totalInstallments / profitFactor;
-
-  let adminFee = netFinance * 0.01;
-  if (adminFee > 5000) adminFee = 5000;
-  let vat = adminFee * 0.15;
-  if (vat > 750) vat = 750;
-
-  const commodityFee = addCommodityFee ? netFinance * 0.01 : 0;
-  const finalNetFinance = netFinance - adminFee - vat - commodityFee;
-  const totalFinal = finalNetFinance + extraSupport;
-
-  document.getElementById("question").innerHTML = `
-    <h2>نتيجة الحاسبة:</h2>
-    <p>قسطك في أول ${monthsWithCommitment} شهر: ${availableInstallment.toFixed(0)} ريال</p>
-    <p>ثم القسط بعد سداد الالتزامات: ${allowedInstallment.toFixed(0)} ريال</p>
-    <p>إجمالي التمويل بالأرباح: ${totalInstallments.toFixed(0)} ريال</p>
-    <p>التمويل الصافي قبل الرسوم: ${netFinance.toFixed(0)} ريال</p>
-    <p>الرسوم الإدارية: ${adminFee.toFixed(0)} ريال</p>
-    <p>الضريبة على الرسوم: ${vat.toFixed(0)} ريال</p>
-    ${addCommodityFee ? `<p>رسوم السلع: ${commodityFee.toFixed(0)} ريال</p>` : ''}
-    <p>التمويل النهائي بعد الرسوم: ${finalNetFinance.toFixed(0)} ريال</p>
-    ${extraSupport ? `<p>الدعم الإضافي: ${extraSupport.toLocaleString()} ريال</p>` : ''}
-    <h3>للتواصل: 0506214458 - hlooleqrr.com</h3>
-  `;
-}
-</script>

@@ -3,30 +3,90 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>حاسبة التمويل - مع دفعة أخيرة للسيارة</title>
+  <title>حاسبة التمويل - سرعة تملك العقار</title>
   <style>
-    body { font-family: 'Tajawal', sans-serif; background-color: #f4f6f8; margin: 0; padding: 0; text-align: center; }
-    header { background-color: #005c48; color: white; padding: 20px; }
-    .container { max-width: 600px; margin: 20px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
-    input, select, button { width: 90%; padding: 10px; margin: 10px 0; font-size: 16px; border-radius: 5px; border: 1px solid #ccc; }
-    button { background-color: #00796b; color: white; border: none; cursor: pointer; }
-    button:hover { background-color: #004d40; }
-    footer { font-size: 12px; color: #666; margin-top: 40px; padding: 10px; }
-    .fade-in { opacity: 0; transform: translateY(20px); animation: fadeInMove 0.6s forwards; }
-    @keyframes fadeInMove { to { opacity: 1; transform: translateY(0); } }
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      background-color: #005c48;
+      color: white;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    input, select, button {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #00796b;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #004d40;
+    }
+    footer {
+      font-size: 12px;
+      color: #666;
+      margin-top: 40px;
+      padding: 10px;
+    }
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInMove 0.6s forwards;
+    }
+    @keyframes fadeInMove {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   </style>
 </head>
+
 <body>
 <header>
   <h1>سرعة تملك العقار والحلول التمويلية</h1>
-  <p>حاسبة التمويل التقريبية - مع دفعة أخيرة للسيارة</p>
+  <p>حاسبة التمويل التقريبية</p>
 </header>
-<div class="container">
-  <p>✅ تم تعديل الحاسبة لتشمل سؤال "هل لديك دفعة أخيرة؟" في حال اختيار "قرض سيارة".</p>
-  <p>⚠️ الرجاء إكمال بناء منطق JavaScript حسب ما تم شرحه في المحادثة لتضمين الحسبة الخاصة بالدفعة الأخيرة.</p>
+
+<div class="container" id="form-container">
+  <div id="question"></div>
+  <button onclick="nextQuestion()">ابدأ الحسبة</button>
 </div>
+
 <footer>
-  <p>جميع الحقوق محفوظة - سرعة تملك العقار والحلول التمويلية</p>
+  <p>جميع الحقوق محفوظة - سرعة تملك العقار والحلول التمويلية - <span id="datetime"></span></p>
 </footer>
+
+<script>
+function updateDateTime() {
+  const now = new Date();
+  document.getElementById('datetime').innerText =
+    `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+}
+setInterval(updateDateTime, 1000);
+updateDateTime();
+</script>
+
+<!-- سيتم إرسال JavaScript الكامل في الرد التالي -->
 </body>
 </html>

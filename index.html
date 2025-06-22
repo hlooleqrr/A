@@ -1,1 +1,94 @@
-
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سرعة تملك العقار - حاسبة التمويل</title>
+  <style>
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      background-color: #005c48;
+      color: white;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    input, select, button {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #00796b;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #004d40;
+    }
+    footer {
+      font-size: 12px;
+      color: #666;
+      margin-top: 40px;
+      padding: 10px;
+    }
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInMove 0.6s forwards;
+    }
+    @keyframes fadeInMove {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>سرعة تملك العقار والحلول التمويلية تقدم لك (حاسبة التمويل التقريبية)</h1>
+  <p>نقدم أفضل الحلول التمويلية المتكاملة</p>
+</header>
+<div class="container" id="form-container">
+  <div id="question"></div>
+  <button onclick="nextQuestion()">ابدأ الحسبة</button>
+</div>
+<script>
+// سيتم استكمال الكود البرمجي الكامل لاحقًا داخل ملف النسخة النهائية
+</script>
+<footer>
+  <p>جميع الحقوق محفوظة لسرعة تملك العقار والحلول التمويلية - <span id="datetime"></span></p>
+</footer>
+<script>
+function updateDateTime() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  document.getElementById('datetime').innerText = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+setInterval(updateDateTime, 1000);
+updateDateTime();
+</script>
+</body>
+</html>

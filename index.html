@@ -34,7 +34,6 @@ function start(){
   answers = {}; commitments = []; curCommit = {};
   askFinanceType();
 }
-
 function askFinanceType(){
   show(`<label>نوع التمويل:</label><br>
     <select id="ft"><option>تمويل عقاري</option><option>تمويل شخصي</option></select><br>
@@ -71,7 +70,6 @@ function askProfit(){
     <button onclick="saveProfit()">التالي</button>`);
 }
 function saveProfit(){ answers.profitMargin = parseFloat(document.getElementById('pr').value) || 0; askDuration(); }
-
 function askDuration(){
   const max = answers.financeType === 'تمويل شخصي' ? 60 : 360;
   const defaultVal = 240;
@@ -85,7 +83,6 @@ function askDuration(){
     <button onclick="saveDuration()">التالي</button>`);
 }
 function saveDuration(){ answers.duration = parseInt(document.getElementById('dur').value); askHasCommit(); }
-
 function askHasCommit(){
   show(`<label>هل لديك التزامات؟</label><br>
     <select id="hasC"><option>نعم</option><option>لا</option></select><br>
@@ -94,7 +91,6 @@ function askHasCommit(){
 function saveHasCommit(){
   (document.getElementById('hasC').value === 'نعم') ? askCommitType() : calculate();
 }
-
 function askCommitType(){
   show(`<label>نوع الالتزام:</label><br>
     <select id="ctype"><option>قرض شخصي</option><option>قرض سيارة</option><option>قرض استهلاكي</option></select><br>
@@ -107,7 +103,6 @@ function askCommitAmount(){
     <button onclick="saveCommitAmount()">التالي</button>`);
 }
 function saveCommitAmount(){ curCommit.amount = parseFloat(document.getElementById('camt').value) || 0; askCommitMonths(); }
-
 function askCommitMonths(){
   show(`<label>الأشهر المتبقية:</label><br>
     <select id="cmon">
@@ -162,9 +157,7 @@ function calculate(){
     addCommodity = true;
   } else {
     if (supported === 'مدعوم') {
-      if (bundle === 'نعم') {
-        extraSupport = salary < 10000 ? 150000 : 100000;
-      }
+      if (bundle === 'نعم') extraSupport = salary < 10000 ? 150000 : 100000;
       deductionRate = salary < 15000 ? 55 : 65;
     } else deductionRate = salary < 15000 ? 55 : 65;
   }
@@ -172,9 +165,7 @@ function calculate(){
   const allowedInstallment = salary * (deductionRate / 100);
   let available = allowedInstallment;
 
-  commitments.forEach(c => {
-    available -= c.amount;
-  });
+  commitments.forEach(c => { available -= c.amount; });
 
   if (available <= 0) {
     show(`<h2>عذرًا</h2><p>لا يمكن تقديم تمويل حاليًا بسبب التزاماتك الحالية.</p>
@@ -191,18 +182,18 @@ function calculate(){
   const factor = (duration / 12) * (rate / 100) + 1;
   const netFinance = totalFinal / factor;
 
-  let fee = netFinance * 0.01; if (fee > 5000) fee = 5000;
-  let vat = fee * 0.15;         if (vat > 750) vat = 750;
+  let fee = netFinance * 0.01;
+  if (fee > 5000) fee = 5000;
+  let vat = fee * 0.15;
+  if (vat > 750) vat = 750;
   const commodity = addCommodity ? netFinance * 0.01 : 0;
 
   let netAfter = netFinance - (fee + vat + commodity);
 
-  // خصم كامل قرض السيارة (أقساط + دفعة أخيرة)
+  // ✅ خصم كل الالتزامات (شخصي + سيارة + استهلاكي)
   commitments.forEach(c => {
-    if (c.type === 'قرض سيارة') {
-      const totalCar = (c.amount * c.months) + (c.lastPayment || 0);
-      netAfter -= totalCar;
-    }
+    const total = (c.amount * c.months) + (c.lastPayment || 0);
+    netAfter -= total;
   });
 
   const finalAmount = netAfter + extraSupport;
@@ -226,13 +217,15 @@ function calculate(){
   <p>جميع الحقوق محفوظة لـ سرعة تملك العقار والحلول التمويلية – <span id="datetime"></span></p>
 </footer>
 <script>
-  setInterval(()=>{
-    const now = new Date();
-    document.getElementById("datetime").innerText =
-      now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-'+
-      now.getDate().toString().padStart(2,'0')+' '+now.getHours().toString().padStart(2,'0')+':' +
-      now.getMinutes().toString().padStart(2,'0')+':'+now.getSeconds().toString().padStart(2,'0');
-  },1000);
+setInterval(()=>{
+  const now = new Date();
+  document.getElementById("datetime").innerText =
+    now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-'+
+    now.getDate().toString().padStart(2,'0')+' '+
+    now.getHours().toString().padStart(2,'0')+':'+
+    now.getMinutes().toString().padStart(2,'0')+':'+
+    now.getSeconds().toString().padStart(2,'0');
+},1000);
 </script>
 </body>
 </html>

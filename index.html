@@ -16,13 +16,11 @@
     @keyframes fadeInMove{to{opacity:1;transform:translateY(0)}}
   </style>
 </head>
-
 <body>
 <header>
   <h1>سرعة تملك العقار والحلول التمويلية</h1>
   <p>حاسبة التمويل التقريبية</p>
 </header>
-
 <div class="container" id="form-container">
   <div id="question"></div>
   <button id="mainButton" onclick="handleStartOrReset()">ابدأ الحسبة</button>
@@ -30,7 +28,6 @@
     <button onclick="nextQuestion()">التالي</button>
   </div>
 </div>
-
 <script>
 let answers = { commitments: [] }, step = 0, commitmentStep = 0, currentCommitment = {};
 let hasStarted = false;
@@ -40,11 +37,7 @@ const generalQuestions = [
   { id:'supported',label:'هل التمويل مدعوم؟',type:'select',options:['مدعوم','غير مدعوم'],show:a=>a.financeType==='تمويل عقاري' },
   { id:'bundle',label:'هل ترغب في دفعة مقدمة من سكني؟',type:'select',options:['نعم','لا'],show:a=>a.supported==='مدعوم' },
   { id:'salary',label:'كم الراتب الشهري؟',type:'number' },
-  {
-    id: 'months',
-    label: 'عدد الأشهر للتمويل',
-    type: 'custom'
-  },
+  { id:'months',label:'عدد الأشهر للتمويل',type:'custom' },
   { id:'profitMargin',label:'نسبة هامش الربح السنوي (%)؟',type:'number' },
   { id:'hasCommitments',label:'هل لديك التزامات؟',type:'select',options:['نعم','لا'] }
 ];
@@ -96,14 +89,8 @@ function showQuestion(){
 
   if(q.type==='select'){
     const sel = document.createElement('select'); sel.id = q.id;
-    q.options.forEach(opt=>{
-      sel.innerHTML += `<option value="${opt}">${opt}</option>`;
-    });
+    q.options.forEach(opt=>{ sel.innerHTML += `<option value="${opt}">${opt}</option>`; });
     div.appendChild(sel);
-  }else if(q.type==='range'){
-    div.innerHTML += `<input type="range" id="${q.id}" min="${q.min}" max="${q.max}" value="${q.value}"
-                       oninput="document.getElementById('${q.id}Val').textContent=this.value">
-                      <br><span id="${q.id}Val">${q.value}</span> شهر`;
   }else if(q.type==='custom' && q.id==='months'){
     const isPersonal = answers.financeType === 'تمويل شخصي';
     const defValue = isPersonal ? 60 : 240;
@@ -111,6 +98,7 @@ function showQuestion(){
     div.innerHTML = `
       <label>${q.label}</label><br>
       <input type="range" id="months" min="12" max="${maxVal}" value="${defValue}"
+        step="1" style="width:95%;accent-color:#00796b"
         oninput="document.getElementById('monthsVal').textContent=this.value">
       <br><span id="monthsVal">${defValue}</span> شهر`;
   }else{
@@ -139,7 +127,7 @@ function nextQuestion(){
   }
   showQuestion();
 }
-
+<script>
 function calculate(){
   const salary = parseFloat(answers.salary),
         months = parseInt(answers.months),
@@ -213,7 +201,23 @@ function calculate(){
     <p><strong>التمويل الصافي النهائي:</strong> ${finalNet.toFixed(0)} ريال</p>
     ${supportText}
     <h3 style="margin-top:20px;">📞 للتواصل مع سرعة تملك العقار والحلول التمويلية</h3>
-    <p>0506214458 – hlooleqrr.com</p>`;
+    <p>0506214458 – hlooleqrr.com</p>
+    <div style="margin-top: 30px;">
+      <button onclick="resetCalc()" style="
+        background-color: #4CAF50;
+        color: white;
+        padding: 8px 16px;
+        font-size: 14px;
+        border-radius: 20px;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+      ">
+        <span style="font-size:18px;margin-left:6px;">🔄</span> إعادة الحسبة
+      </button>
+    </div>
+  `;
   document.getElementById('question').innerHTML = html;
 }
 

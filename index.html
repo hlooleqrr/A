@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>سرعة تملك العقار – حاسبة التمويل</title>
   <style>
     body{font-family:'Tajawal',sans-serif;background:#f4f6f8;margin:0;text-align:center}
@@ -21,27 +21,20 @@
   <h1>سرعة تملك العقار والحلول التمويلية</h1>
   <p>حاسبة التمويل التقريبية</p>
 </header>
+
 <div class="container" id="form">
-  <button id="startBtn" onclick="start()">ابدأ الحاسبة</button>
+  <button onclick="start()" id="startBtn">ابدأ الحاسبة</button>
   <div id="question"></div>
 </div>
 
 <script>
-// Variables
-let answers={},commitments=[],curCommit={};
-
-// Helper
+let answers = {}, commitments = [], curCommit = {};
 function show(html){
-  document.getElementById('question').innerHTML='<div class="fade-in">'+html+'</div>';
+  document.getElementById('question').innerHTML = '<div class="fade-in">'+html+'</div>';
+  document.getElementById('startBtn').innerText = 'أعد الحسبة';
 }
-function start(){
-  document.getElementById('startBtn').innerText='أعد الحسبة';
-  askFinanceType();
-}
+function start(){ askFinanceType(); }
 
-// سيتم إرسال باقي السكربت (JavaScript الكامل) في الرس |oai:code-citation|
-
-<script>
 function askFinanceType(){
   show(`<label>نوع التمويل:</label><br>
     <select id="ft"><option>تمويل عقاري</option><option>تمويل شخصي</option></select><br>
@@ -149,8 +142,6 @@ function askMore(){
 function saveMore(){
   (document.getElementById('more').value==='نعم')?askCommitType():calculate();
 }
-
-<script>
 function calculate(){
   const salary = answers.salary;
   const duration = answers.duration;
@@ -167,85 +158,54 @@ function calculate(){
     deductionRate = 33.33;
     addCommodity = true;
   } else {
-    if(supported === 'مدعوم'){
-      if(bundle === 'نعم'){
-        extraSupport = salary < 10000 ? 150000 : 100000;
-      }
-    }
     deductionRate = salary < 15000 ? 55 : 65;
+    if(supported === 'مدعوم' && bundle === 'نعم'){
+      extraSupport = salary < 10000 ? 150000 : 100000;
+    }
   }
 
   let allowedInstallment = salary * (deductionRate / 100);
   let available = allowedInstallment;
-  let totalCommit = 0;
-  let commitInstall = 0;
-
   let carLastPaymentMonthly = 0;
 
   commitments.forEach(c => {
-    const months = c.months;
-    const lastPay = c.lastPayment || 0;
-    const monthly = c.amount;
-    const total = (monthly * months) + lastPay;
-    totalCommit += total;
-    commitInstall += monthly;
-    if (c.type === 'قرض سيارة' && lastPay > 0) {
-      carLastPaymentMonthly = lastPay / 24;
+    available -= c.amount;
+    if(c.type === 'قرض سيارة' && c.lastPayment > 0){
+      carLastPaymentMonthly = c.lastPayment / 24;
     }
-    available -= monthly;
   });
 
-  // شرط التمويل الشخصي مع التزامات: نرفع الاستقطاع إلى 45% ونقيده بـ 33.33%
-  if (financeType === 'تمويل شخصي' && commitments.length > 0) {
+  if(financeType === 'تمويل شخصي' && commitments.length > 0){
     deductionRate = 45;
-    allowedInstallment = salary * (deductionRate / 100);
+    allowedInstallment = salary * 0.45;
     available = allowedInstallment;
-
-    commitments.forEach(c => {
-      const monthly = c.amount;
-      available -= monthly;
-    });
-
-    if (available > (salary * 0.3333)) {
-      available = salary * 0.3333;
-    }
+    commitments.forEach(c => available -= c.amount);
+    if(available > salary * 0.3333) available = salary * 0.3333;
   }
 
-  if (available <= 0){
-    show(`<h2>عذرًا</h2><p>لا يمكن تقديم تمويل حاليًا بسبب التزاماتك الحالية.</p>
-    <p>للتواصل: 0506214458 - hlooleqrr.com</p>`);
+  if(available <= 0){
+    show(`<h2>عذرًا</h2><p>لا يمكن تقديم تمويل حاليًا بسبب التزاماتك الحالية.</p><p>للتواصل: 0506214458 - hlooleqrr.com</p>`);
     return;
   }
 
-  const monthsWithCommit = Math.max(...commitments.map(c => c.months), 0);
+  const monthsWithCommit = Math.max(...commitments.map(c=>c.months),0);
   const monthsAfter = duration - monthsWithCommit;
-
   const total1 = available * monthsWithCommit;
   const total2 = allowedInstallment * monthsAfter;
   const totalFinal = total1 + total2;
-
-  const factor = (duration / 12) * (rate / 100) + 1;
+  const factor = (duration/12)*(rate/100)+1;
   const netFinance = totalFinal / factor;
-
-  let fee = netFinance * 0.01;
-  if (fee > 5000) fee = 5000;
-  let vat = fee * 0.15;
-  if (vat > 750) vat = 750;
-
+  let fee = Math.min(5000, netFinance * 0.01);
+  let vat = Math.min(750, fee * 0.15);
   const commodity = addCommodity ? netFinance * 0.01 : 0;
   const netAfter = netFinance - (fee + vat + commodity);
   const finalAmount = netAfter + extraSupport;
-
-  let carNote = "";
-  if (carLastPaymentMonthly > 0 && financeType === 'تمويل شخصي' && duration < 60) {
-    carNote = `<p><strong>يشمل القسط:</strong> ${carLastPaymentMonthly.toFixed(0)} ريال إضافي شهريًا خلال أول 24 شهر للدفعة الأخيرة للسيارة</p>`;
-  }
 
   show(`
     <h2>نتيجة الحاسبة:</h2>
     <p><strong>قسطك خلال أول ${monthsWithCommit} شهر:</strong> ${available.toFixed(0)} ريال</p>
     <p><strong>ثم القسط:</strong> ${allowedInstallment.toFixed(0)} ريال</p>
-    ${carNote}
+    ${carLastPaymentMonthly>0 && duration<60 ? `<p><strong>يشمل القسط:</strong> ${carLastPaymentMonthly.toFixed(0)} ريال شهريًا للدفعة الأخيرة للسيارة</p>` : ''}
     <p><strong>إجمالي التمويل مع الأرباح:</strong> ${totalFinal.toFixed(0)} ريال</p>
     <p><strong>معامل الربح:</strong> ${factor.toFixed(3)}</p>
     <p><strong>التمويل الصافي قبل الرسوم:</strong> ${netFinance.toFixed(0)} ريال</p>
@@ -253,8 +213,22 @@ function calculate(){
     <p><strong>الضريبة على الرسوم:</strong> ${vat.toFixed(0)} ريال</p>
     ${addCommodity ? `<p><strong>رسوم السلع:</strong> ${commodity.toFixed(0)} ريال</p>` : ''}
     <p><strong>التمويل الصافي النهائي:</strong> ${netAfter.toFixed(0)} ريال</p>
-    ${extraSupport > 0 ? `<p><strong>دعم حكومي مضاف:</strong> ${extraSupport.toLocaleString()} ريال</p>` : ''}
+    ${extraSupport>0 ? `<p><strong>دعم حكومي مضاف:</strong> ${extraSupport.toLocaleString()} ريال</p>` : ''}
     <h3>📞 للتواصل: 0506214458 – hlooleqrr.com</h3>
   `);
 }
 </script>
+
+<footer>
+  <p>جميع الحقوق محفوظة لـ سرعة تملك العقار والحلول التمويلية – <span id="datetime"></span></p>
+</footer>
+<script>
+setInterval(()=>{
+  const now = new Date();
+  document.getElementById("datetime").innerText =
+    now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-'+now.getDate().toString().padStart(2,'0')+
+    ' '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0')+':'+now.getSeconds().toString().padStart(2,'0');
+},1000);
+</script>
+</body>
+</html>

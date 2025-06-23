@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>حاسبة التمويل - سرعة تملك العقار</title>
-
-  <!-- ====== التنسيقات الأساسية ====== -->
   <style>
     body{font-family:'Tajawal',sans-serif;background:#f4f6f8;margin:0;text-align:center}
     header{background:#005c48;color:#fff;padding:20px}
@@ -25,7 +23,6 @@
   <p>حاسبة التمويل التقريبية</p>
 </header>
 
-<!-- ====== حاوية النموذج ====== -->
 <div class="container" id="form-container">
   <div id="question"></div>
   <button id="mainButton" onclick="handleStartOrReset()">ابدأ الحسبة</button>
@@ -34,57 +31,31 @@
   </div>
 </div>
 
-<!-- ====== منطق الحاسبة ====== -->
 <script>
-/*** متغيّرات عامّة ***/
 let answers = { commitments: [] }, step = 0, commitmentStep = 0, currentCommitment = {};
 let hasStarted = false;
 
-/*** الأسئلة العامّة ***/
 const generalQuestions = [
   { id:'financeType',label:'نوع التمويل',type:'select',options:['تمويل عقاري','تمويل شخصي'] },
-  { id:'supported',label:'هل التمويل مدعوم؟',type:'select',options:['مدعوم','غير مدعوم'],
-    show:a=>a.financeType==='تمويل عقاري' },
-  { id:'bundle',label:'هل ترغب في دفعة مقدمة من سكني؟',type:'select',options:['نعم','لا'],
-    show:a=>a.supported==='مدعوم' },
+  { id:'supported',label:'هل التمويل مدعوم؟',type:'select',options:['مدعوم','غير مدعوم'],show:a=>a.financeType==='تمويل عقاري' },
+  { id:'bundle',label:'هل ترغب في دفعة مقدمة من سكني؟',type:'select',options:['نعم','لا'],show:a=>a.supported==='مدعوم' },
   { id:'salary',label:'كم الراتب الشهري؟',type:'number' },
   {
-  id:'months',
-  label:'عدد الأشهر للتمويل',
-  type:'range',
-  min:12,
-  id: 'months',
-  label: 'عدد الأشهر للتمويل',
-  type: 'range',
-  min: 12,
-  max: 360,
-  value: 240,
-  show: a => true,
-  render: (a) => {
-    const isPersonal = a.financeType === 'تمويل شخصي';
-    return `
-      <label>عدد الأشهر للتمويل</label><br>
-      <input type="range" id="months" min="12" max="${isPersonal ? 60 : 360}" value="${isPersonal ? 60 : 240}"
-        oninput="document.getElementById('monthsVal').textContent=this.value">
-      <br><span id="monthsVal">${isPersonal ? 60 : 240}</span> شهر
-    `;
-  }
-}
-},
+    id: 'months',
+    label: 'عدد الأشهر للتمويل',
+    type: 'custom'
+  },
   { id:'profitMargin',label:'نسبة هامش الربح السنوي (%)؟',type:'number' },
   { id:'hasCommitments',label:'هل لديك التزامات؟',type:'select',options:['نعم','لا'] }
 ];
 
-/*** أسئلة كل التزام ***/
 const commitmentQuestions = [
   { id:'type',label:'نوع الالتزام',type:'select',options:['قرض شخصي','قرض سيارة','قرض استهلاكي'] },
   { id:'amount',label:'كم القسط الشهري؟',type:'number' },
-  { id:'months',label:'كم عدد الأشهر المتبقية؟',type:'select',
-    options:Array.from({length:60},(_,i)=>(i+1)+' شهر') },
+  { id:'months',label:'كم عدد الأشهر المتبقية؟',type:'select',options:Array.from({length:60},(_,i)=>(i+1)+' شهر') },
   { id:'more',label:'هل لديك التزامات أخرى؟',type:'select',options:['نعم','لا'] }
 ];
 
-/*** زر ابدأ/إعادة الحسبة ***/
 function handleStartOrReset(){
   if(!hasStarted){
     hasStarted = true;
@@ -95,7 +66,6 @@ function handleStartOrReset(){
   }
 }
 
-/*** إعادة كل شيء من الصفر ***/
 function resetCalc(){
   answers = { commitments: [] };
   step = commitmentStep = 0;
@@ -105,7 +75,6 @@ function resetCalc(){
   showQuestion();
 }
 
-/*** إظهار السؤال الحالي ***/
 function showQuestion(){
   const cont = document.getElementById('question');
   cont.innerHTML = '';
@@ -124,6 +93,7 @@ function showQuestion(){
 
   const div = document.createElement('div'); div.classList.add('fade-in');
   div.innerHTML = `<label>${q.label}</label><br>`;
+
   if(q.type==='select'){
     const sel = document.createElement('select'); sel.id = q.id;
     q.options.forEach(opt=>{
@@ -134,13 +104,21 @@ function showQuestion(){
     div.innerHTML += `<input type="range" id="${q.id}" min="${q.min}" max="${q.max}" value="${q.value}"
                        oninput="document.getElementById('${q.id}Val').textContent=this.value">
                       <br><span id="${q.id}Val">${q.value}</span> شهر`;
+  }else if(q.type==='custom' && q.id==='months'){
+    const isPersonal = answers.financeType === 'تمويل شخصي';
+    const defValue = isPersonal ? 60 : 240;
+    const maxVal = isPersonal ? 60 : 360;
+    div.innerHTML = `
+      <label>${q.label}</label><br>
+      <input type="range" id="months" min="12" max="${maxVal}" value="${defValue}"
+        oninput="document.getElementById('monthsVal').textContent=this.value">
+      <br><span id="monthsVal">${defValue}</span> شهر`;
   }else{
     div.innerHTML += `<input type="number" id="${q.id}">`;
   }
   cont.appendChild(div);
 }
 
-/*** عند الضغط على "التالي" ***/
 function nextQuestion(){
   const q = step < generalQuestions.length ? generalQuestions[step] : commitmentQuestions[commitmentStep];
   const val = document.getElementById(q.id)?.value;
@@ -162,7 +140,6 @@ function nextQuestion(){
   showQuestion();
 }
 
-/*** إجراء الحساب النهائي ***/
 function calculate(){
   const salary = parseFloat(answers.salary),
         months = parseInt(answers.months),
@@ -170,20 +147,18 @@ function calculate(){
         profitMargin = parseFloat(answers.profitMargin),
         { financeType, supported, bundle } = answers;
 
-  /* نسبة الاستقطاع */
   let deductionRate = 0, extraSupport = 0, addCommodityFee = false;
   if(financeType === 'تمويل شخصي'){
     if(months>60){ alert('مدة التمويل الشخصي لا تتجاوز 60 شهر'); return; }
-    deductionRate = 33.33;          // حسب التعليمات
+    deductionRate = 33.33;
     addCommodityFee = true;
-  }else{                           // تمويل عقاري
+  }else{
     if(supported === 'مدعوم'){
       if(bundle === 'لا'){ deductionRate = 65; extraSupport = salary<10000?150000:100000; }
       else{ deductionRate = salary<15000?55:65; }
     }else{ deductionRate = salary<15000?55:65; }
   }
 
-  /* الأقساط المتغيّرة حسب الالتزامات */
   let allowedInst = salary * deductionRate / 100;
   let commits = [...answers.commitments].sort((a,b)=>parseInt(a.months)-parseInt(b.months));
   let schedule = [], curMonth = 0;
@@ -198,18 +173,15 @@ function calculate(){
     }
   }
 
-  /* إجمالي الأقساط */
   const totalInst = schedule.reduce((s,p)=>s+p.inst*p.months,0);
   const profitFactor = (years * profitMargin / 100)+1;
   const netFinance   = totalInst / profitFactor;
 
-  /* الرسوم */
   let adminFee = netFinance*0.01, vat = adminFee*0.15;
   if(adminFee+vat>5750){ adminFee=5000; vat=750; }
   const commodityFee = addCommodityFee ? netFinance*0.01 : 0;
   const finalNet = netFinance - (adminFee+vat+commodityFee);
 
-  /* نص الدعم / الباقة */
   let supportText='';
   if(financeType==='تمويل عقاري' && supported==='مدعوم'){
     if(bundle==='نعم'){
@@ -223,7 +195,6 @@ function calculate(){
     }
   }
 
-  /* عرض النتيجة */
   let html = '<h2>نتيجة الحاسبة:</h2>';
   schedule.forEach((p,i)=>{
     const from=schedule.slice(0,i).reduce((s,x)=>s+x.months,0)+1,
@@ -233,20 +204,19 @@ function calculate(){
   html += `
     <p><strong>إجمالي التمويل مع الأرباح:</strong> ${totalInst.toFixed(0)} ريال</p>
     <p><strong>معامل الربح:</strong> ${profitFactor.toFixed(3)}</p>
+    <p><strong>الربح:</strong> ${(totalInst - netFinance).toFixed(0)} ريال</p>
+    <p><strong>الربح مع الرسوم (الإدارية + الضريبة ${addCommodityFee ? '+ السلع' : ''}):</strong> ${(totalInst - finalNet).toFixed(0)} ريال</p>
     <p><strong>التمويل الصافي قبل الرسوم:</strong> ${netFinance.toFixed(0)} ريال</p>
     <p><strong>الرسوم الإدارية:</strong> ${adminFee.toFixed(0)} ريال</p>
     <p><strong>ضريبة الرسوم:</strong> ${vat.toFixed(0)} ريال</p>
     ${addCommodityFee?`<p><strong>رسوم السلع:</strong> ${commodityFee.toFixed(0)} ريال</p>`:''}
     <p><strong>التمويل الصافي النهائي:</strong> ${finalNet.toFixed(0)} ريال</p>
-    <p><strong>الربح:</strong> ${ (totalInst - netFinance).toFixed(0) } ريال</p>
-<p><strong>الربح مع الرسوم (الإدارية + الضريبة ${addCommodityFee ? '+ السلع' : ''}):</strong> ${ (totalInst - finalNet).toFixed(0) } ريال</p>
     ${supportText}
     <h3 style="margin-top:20px;">📞 للتواصل مع سرعة تملك العقار والحلول التمويلية</h3>
     <p>0506214458 – hlooleqrr.com</p>`;
   document.getElementById('question').innerHTML = html;
 }
 
-/*** تحديث التاريخ والوقت في الفوتر ***/
 function updateDateTime(){
   const n=new Date();
   document.getElementById('datetime').innerText =

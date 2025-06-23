@@ -53,8 +53,24 @@ const generalQuestions = [
   label:'عدد الأشهر للتمويل',
   type:'range',
   min:12,
-  max:answers.financeType==='تمويل شخصي' ? 60 : 360,
-  value:answers.financeType==='تمويل شخصي' ? 60 : 240
+{
+  id: 'months',
+  label: 'عدد الأشهر للتمويل',
+  type: 'range',
+  min: 12,
+  max: 360,
+  value: 240,
+  show: a => true,
+  render: (a) => {
+    const isPersonal = a.financeType === 'تمويل شخصي';
+    return `
+      <label>عدد الأشهر للتمويل</label><br>
+      <input type="range" id="months" min="12" max="${isPersonal ? 60 : 360}" value="${isPersonal ? 60 : 240}"
+        oninput="document.getElementById('monthsVal').textContent=this.value">
+      <br><span id="monthsVal">${isPersonal ? 60 : 240}</span> شهر
+    `;
+  }
+}
 },
   { id:'profitMargin',label:'نسبة هامش الربح السنوي (%)؟',type:'number' },
   { id:'hasCommitments',label:'هل لديك التزامات؟',type:'select',options:['نعم','لا'] }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> حاسبة التمويل</title>
+  <title>سرعة تملك العقار - حاسبة التمويل</title>
   <style>
     body {
       font-family: 'Tajawal', sans-serif;
@@ -62,7 +62,6 @@
   </style>
 </head>
 <body>
-
 <header>
   <h1>سرعة تملك العقار والحلول التمويلية تقدم لك (حاسبة التمويل التقريبية)</h1>
   <p>نقدم أفضل الحلول التمويلية المتكاملة</p>
@@ -79,14 +78,10 @@ const questions = [
   { label: 'هل التمويل مدعوم؟', id: 'supported', type: 'select', options: ['مدعوم', 'غير مدعوم'], showIf: a => a.financeType === 'تمويل عقاري' },
   { label: 'هل ترغب في الحصول على الباقة المقدمة من سكني بشكل دفعة أولى؟', id: 'bundle', type: 'select', options: ['نعم', 'لا'], showIf: a => a.supported === 'مدعوم' },
   { label: 'كم الراتب الشهري؟', id: 'salary', type: 'number' },
-  {
-    label: 'حدد عدد الأشهر:', id: 'months', type: 'range', min: 12, max: 60, value: 60,
-    showIf: a => a.financeType === 'تمويل شخصي'
-  },
-  {
-    label: 'حدد عدد سنوات التمويل:', id: 'years', type: 'range', min: 1, max: 30, value: 20,
-    showIf: a => a.financeType === 'تمويل عقاري'
-  },
+  // استبدال "عدد السنوات" بـ "عدد الأشهر" عند التمويل الشخصي
+  { label: 'حدد عدد الأشهر:', id: 'months', type: 'range', min: 1, max: 60, value: 20, showIf: a => a.financeType === 'تمويل شخصي' },
+  // المحافظة على "عدد سنوات التمويل" للحالة العقارية فقط
+  { label: 'حدد عدد سنوات التمويل:', id: 'years', type: 'range', min: 1, max: 30, value: 20, showIf: a => a.financeType === 'تمويل عقاري' },
   { label: 'كم نسبة هامش الربح السنوي (%)؟', id: 'profitMargin', type: 'number' },
   { label: 'هل لديك التزامات حالية؟', id: 'hasCommitments', type: 'select', options: ['نعم', 'لا'] },
   { label: 'نوع الالتزام:', id: 'commitmentType', type: 'select', options: ['قرض شخصي', 'قرض سيارة', 'قرض استهلاكي'], showIf: a => a.hasCommitments === 'نعم' },
@@ -106,14 +101,12 @@ function showQuestion(index) {
     document.querySelector('button').style.display = 'none';
     return;
   }
-
   const q = questions[index];
   if (q.showIf && !q.showIf(answers)) {
     current++;
     showQuestion(current);
     return;
   }
-
   const div = document.createElement('div');
   div.classList.add('fade-in');
   const label = document.createElement('label');
@@ -130,6 +123,7 @@ function showQuestion(index) {
       option.textContent = opt;
       select.appendChild(option);
     });
+    if (answers[q.id]) select.value = answers[q.id];
     div.appendChild(select);
   } else if (q.type === 'range') {
     const input = document.createElement('input');
@@ -150,17 +144,17 @@ function showQuestion(index) {
     const input = document.createElement('input');
     input.type = q.type;
     input.id = q.id;
+    if (answers[q.id]) input.value = answers[q.id];
     div.appendChild(input);
   }
-
   container.appendChild(div);
 }
 
 function nextQuestion() {
   if (current > 0) {
-    const prevQ = questions[current - 1];
-    const input = document.getElementById(prevQ.id);
-    if (input) answers[prevQ.id] = input.value;
+    const prev = questions[current - 1];
+    const el = document.getElementById(prev.id);
+    if (el) answers[prev.id] = el.value;
   }
   showQuestion(current);
   current++;
@@ -168,8 +162,6 @@ function nextQuestion() {
 
 function calculateResult() {
   const financeType = answers.financeType;
-  const supported = answers.supported;
-  const bundle = answers.bundle;
   const salary = parseFloat(answers.salary) || 0;
   const years = parseFloat(answers.years) || 0;
   const months = parseFloat(answers.months) || 0;
@@ -177,78 +169,86 @@ function calculateResult() {
   const hasCommitments = answers.hasCommitments;
   const commitmentPayment = parseFloat(answers.commitmentPayment) || 0;
   const commitmentMonths = parseFloat(answers.commitmentMonths) || 0;
+  const supported = answers.supported;
+  const bundle = answers.bundle;
 
-  const isPersonal = financeType === "تمويل شخصي";
-  const duration = isPersonal ? months : years * 12;
+  // حساب مدة التمويل بالأشهر
+  const durationMonths = financeType === 'تمويل شخصي' ? months : years * 12;
 
-  let deductionRate = isPersonal ? 33.33 : (salary < 15000 ? 55 : 65);
+  // النسبة المئوية للاستقطاع
+  let deductionRate = financeType === 'تمويل شخصي'
+    ? 33.33
+    : (salary < 15000 ? 55 : 65);
+
+  // دعم إضافي للحالة العقارية
   let extraSupport = 0;
-  let addCommodityFee = isPersonal;
-
-  if (!isPersonal && supported === "مدعوم" && bundle === "نعم") {
+  if (financeType === 'تمويل عقاري' && supported === 'مدعوم' && bundle === 'نعم') {
     extraSupport = salary < 10000 ? 150000 : 100000;
   }
 
-  const allowedInstallment = (salary * (deductionRate / 100));
+  // حساب القسط المسموح والمتاح بعد الالتزامات
+  const allowedInstallment = salary * (deductionRate / 100);
   let availableInstallment = allowedInstallment;
-
-  if (hasCommitments === "نعم") {
+  if (hasCommitments === 'نعم') {
     availableInstallment -= commitmentPayment;
   }
 
   if (availableInstallment <= 0) {
-    const result = document.getElementById("question");
-    result.innerHTML = `
+    document.getElementById('question').innerHTML = `
       <h2>عذرًا</h2>
       <p>لا يمكنك الحصول على تمويل حاليًا بسبب الالتزامات القائمة.</p>
       <h3>للتواصل مع سرعة تملك العقار والحلول التمويلية</h3>
       <p>📞 0506214458 | hlooleqrr.com</p>
     `;
-    result.classList.add('fade-in');
-    document.querySelector('button').style.display = 'none';
     return;
   }
 
-  const monthsWithCommitment = Math.min(commitmentMonths, duration);
-  const monthsWithoutCommitment = duration - monthsWithCommitment;
+  // حساب الأقساط مع وبدون التزامات
+  const wCommit = Math.min(commitmentMonths, durationMonths);
+  const woCommit = durationMonths - wCommit;
+  const totalWith = availableInstallment * wCommit;
+  const totalWo = allowedInstallment * woCommit;
+  const totalInstallments = totalWith + totalWo;
 
-  const totalInstallmentWithCommitment = availableInstallment * monthsWithCommitment;
-  const totalInstallmentWithoutCommitment = allowedInstallment * monthsWithoutCommitment;
-  const totalInstallments = totalInstallmentWithCommitment + totalInstallmentWithoutCommitment;
-
-  const profitFactor = (duration / 12 * profitMargin / 100) + 1;
+  // حساب صافي التمويل
+  const profitFactor = (durationMonths / 12) * (profitMargin / 100) + 1;
   const netFinance = totalInstallments / profitFactor;
 
+  // الرسوم الإدارية والضريبة بحد أقصى 5750
   let adminFee = netFinance * 0.01;
   let vatOnAdmin = adminFee * 0.15;
   if (adminFee + vatOnAdmin > 5750) {
     adminFee = 5000;
     vatOnAdmin = 750;
   }
-  const commodityFee = addCommodityFee ? netFinance * 0.01 : 0;
-  const finalNetFinance = netFinance - (adminFee + vatOnAdmin + commodityFee);
-  const totalFinalFinance = finalNetFinance + extraSupport;
 
-  const result = document.getElementById("question");
-  result.innerHTML = `
+  // رسوم السلع للتمويل الشخصي
+  const commodityFee = financeType === 'تمويل شخصي' ? netFinance * 0.01 : 0;
+
+  // الصافي النهائي
+  const finalNetFinance = netFinance - (adminFee + vatOnAdmin + commodityFee);
+
+  // عرض النتيجة بالترتيب المطلوب
+  document.getElementById('question').innerHTML = `
     <h2>نتيجة الحاسبة:</h2>
     <p><strong>التمويل الصافي النهائي:</strong> ${finalNetFinance.toFixed(0)} ريال</p>
     <p><strong>القسط الشهري:</strong> ${availableInstallment.toFixed(0)} ريال</p>
     <p><strong>الربح:</strong> ${(netFinance - finalNetFinance).toFixed(0)} ريال</p>
     <p><strong>الرسوم الإدارية:</strong> ${adminFee.toFixed(0)} ريال</p>
     <p><strong>الضريبة على الرسوم:</strong> ${vatOnAdmin.toFixed(0)} ريال</p>
-    ${addCommodityFee ? `<p><strong>رسوم السلع:</strong> ${commodityFee.toFixed(0)} ريال</p>` : ''}
-    ${extraSupport > 0 ? `<p><strong>دعم حكومي مضاف:</strong> ${extraSupport.toLocaleString()} ريال</p>` : ''}
+    ${commodityFee ? `<p><strong>رسوم السلع:</strong> ${commodityFee.toFixed(0)} ريال</p>` : ''}
+    ${extraSupport ? `<p><strong>دعم حكومي مضاف:</strong> ${extraSupport.toLocaleString()} ريال</p>` : ''}
     <h3 style="margin-top:20px;">📍 للتواصل مع سرعة تملك العقار والحلول التمويلية</h3>
     <p>0506214458 | hlooleqrr.com</p>
   `;
-  result.classList.add('fade-in');
 }
+
 </script>
 
 <footer>
   <p>جميع الحقوق محفوظة لسرعة تملك العقار والحلول التمويلية - <span id="datetime"></span></p>
 </footer>
+
 <script>
 function updateDateTime() {
   const now = new Date();

@@ -28,6 +28,7 @@
     <button onclick="nextQuestion()">التالي</button>
   </div>
 </div>
+
 <script>
 let answers = { commitments: [] }, step = 0, commitmentStep = 0, currentCommitment = {};
 let hasStarted = false;
@@ -127,7 +128,7 @@ function nextQuestion(){
   }
   showQuestion();
 }
-<script>
+
 function calculate(){
   const salary = parseFloat(answers.salary),
         months = parseInt(answers.months),
@@ -148,7 +149,7 @@ function calculate(){
   }
 
   let allowedInst = salary * deductionRate / 100;
-  let commits = [...answers.commitments].sort((a,b)=>parseInt(a.months)-parseInt(b.months));
+  let commits = [...answers.commitments].sort((a,b)=>parseInt(b.months)-parseInt(a.months));
   let schedule = [], curMonth = 0;
   for(let i=0;i<=commits.length;i++){
     const cut = i<commits.length?parseInt(commits[i].months):months,

@@ -90,6 +90,19 @@ function showQuestion(){
     q = generalQuestions[step];
     if(q.show && !q.show(answers)){ step++; showQuestion(); return; }
   }else if(answers.hasCommitments === 'نعم'){
+  q = commitmentQuestions[commitmentStep];
+
+  // شرط لإظهار سؤال "هل لديك دفعة أخيرة؟" بعد اختيار "قرض سيارة"
+  if(q.id === 'more' && currentCommitment.type === 'قرض سيارة' && !currentCommitment.askFinal){
+    currentCommitment.askFinal = true; // منع التكرار
+    step--; // إبقاءه على نفس السؤال
+    commitmentQuestions.splice(commitmentStep, 0,
+      { id:'finalPayment', label:'هل لديك دفعة أخيرة؟', type:'select', options:['نعم','لا'] },
+      { id:'finalAmount', label:'كم مبلغ الدفعة الأخيرة؟', type:'number' }
+    );
+    showQuestion(); return;
+  }
+}
     q = commitmentQuestions[commitmentStep];
   }else{
     document.getElementById('nextContainer').style.display = 'none';

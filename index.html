@@ -48,7 +48,14 @@ const generalQuestions = [
   { id:'bundle',label:'هل ترغب في دفعة مقدمة من سكني؟',type:'select',options:['نعم','لا'],
     show:a=>a.supported==='مدعوم' },
   { id:'salary',label:'كم الراتب الشهري؟',type:'number' },
-  { id:'months',label:'عدد الأشهر للتمويل',type:'range',min:12,max:360,value:240 },
+  {
+  id:'months',
+  label:'عدد الأشهر للتمويل',
+  type:'range',
+  min:12,
+  max:answers.financeType==='تمويل شخصي' ? 60 : 360,
+  value:answers.financeType==='تمويل شخصي' ? 60 : 240
+},
   { id:'profitMargin',label:'نسبة هامش الربح السنوي (%)؟',type:'number' },
   { id:'hasCommitments',label:'هل لديك التزامات؟',type:'select',options:['نعم','لا'] }
 ];

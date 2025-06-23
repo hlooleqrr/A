@@ -14,6 +14,19 @@
     footer{font-size:12px;color:#666;margin-top:40px;padding:10px}
     .fade-in{opacity:0;transform:translateY(20px);animation:fadeInMove .6s forwards}
     @keyframes fadeInMove{to{opacity:1;transform:translateY(0)}}
+    #mainButton.hidden{display:none}
+    .reset-button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 8px 16px;
+      font-size: 14px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      margin-top: 30px;
+    }
   </style>
 </head>
 <body>
@@ -28,7 +41,6 @@
     <button onclick="nextQuestion()">التالي</button>
   </div>
 </div>
-
 <script>
 let answers = { commitments: [] }, step = 0, commitmentStep = 0, currentCommitment = {};
 let hasStarted = false;
@@ -49,11 +61,10 @@ const commitmentQuestions = [
   { id:'months',label:'كم عدد الأشهر المتبقية؟',type:'select',options:Array.from({length:60},(_,i)=>(i+1)+' شهر') },
   { id:'more',label:'هل لديك التزامات أخرى؟',type:'select',options:['نعم','لا'] }
 ];
-
 function handleStartOrReset(){
   if(!hasStarted){
     hasStarted = true;
-    document.getElementById('mainButton').textContent = 'إعادة الحسبة';
+    document.getElementById('mainButton').classList.add('hidden');
     showQuestion();
   }else{
     resetCalc();
@@ -65,7 +76,7 @@ function resetCalc(){
   step = commitmentStep = 0;
   currentCommitment = {};
   hasStarted = true;
-  document.getElementById('mainButton').textContent = 'إعادة الحسبة';
+  document.getElementById('mainButton').classList.add('hidden');
   showQuestion();
 }
 
@@ -128,7 +139,6 @@ function nextQuestion(){
   }
   showQuestion();
 }
-
 function calculate(){
   const salary = parseFloat(answers.salary),
         months = parseInt(answers.months),
@@ -203,18 +213,8 @@ function calculate(){
     ${supportText}
     <h3 style="margin-top:20px;">📞 للتواصل مع سرعة تملك العقار والحلول التمويلية</h3>
     <p>0506214458 – hlooleqrr.com</p>
-    <div style="margin-top: 30px;">
-      <button onclick="resetCalc()" style="
-        background-color: #4CAF50;
-        color: white;
-        padding: 8px 16px;
-        font-size: 14px;
-        border-radius: 20px;
-        border: none;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-      ">
+    <div>
+      <button onclick="resetCalc()" class="reset-button">
         <span style="font-size:18px;margin-left:6px;">🔄</span> إعادة الحسبة
       </button>
     </div>

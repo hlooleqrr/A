@@ -9,12 +9,12 @@
  header{background:#005c48;color:#fff;padding:20px}
  .container{max-width:600px;margin:20px auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 0 15px rgba(0,0,0,.1)}
  input,select,button{width:90%;padding:10px;margin:10px 0;font-size:16px;border-radius:5px;border:1px solid #ccc}
+ input[type=range]{touch-action:none}
  button{background:#00796b;color:#fff;border:none;cursor:pointer}
  button:hover{background:#004d40}
  footer{font-size:12px;color:#666;margin-top:40px;padding:10px}
- .fade{opacity:0;transform:translateY(20px);animation:fade .4s forwards}
+ .fade{opacity:0;transform:translateY(20px);animation:fade .5s forwards}
  @keyframes fade{to{opacity:1;transform:none}}
- input[type=range]{touch-action:none}
 </style>
 </head>
 <body>
@@ -29,58 +29,57 @@
 </div>
 
 <script>
-/* ---------- متغيّرات ---------- */
-let A={commitments:[]},s=0,cIdx=0;
+/* ====== بيانات النموذج الأساسية ====== */
+let A={commitments:[]},step=0,cIdx=0;
 
-/* ---------- أسئلة رئيسية ---------- */
 const Q=[
- {id:'type',label:'نوع التمويل',t:'s',opt:['تمويل عقاري','تمويل شخصي']},
- {id:'sup',label:'هل التمويل مدعوم؟',t:'s',opt:['مدعوم','غير مدعوم'],sh:a=>a.type==='تمويل عقاري'},
- {id:'bundle',label:'هل ترغب في دفعة مقدمة من سكني؟',t:'s',opt:['نعم','لا'],sh:a=>a.sup==='مدعوم'},
- {id:'sal',label:'كم الراتب الشهري؟',t:'n'},
- {id:'mon',label:'عدد الأشهر للتمويل',t:'r',min:12,max:360,val:240},
- {id:'profit',label:'نسبة هامش الربح السنوي (%)',t:'n'},
- {id:'hasC',label:'هل لديك التزامات؟',t:'s',opt:['نعم','لا']}
+ {id:'type',lab:'نوع التمويل',t:'s',opt:['تمويل عقاري','تمويل شخصي']},
+ {id:'sup',lab:'هل التمويل مدعوم؟',t:'s',opt:['مدعوم','غير مدعوم'],sh:a=>a.type==='تمويل عقاري'},
+ {id:'bundle',lab:'هل ترغب في دفعة مقدمة من سكني؟',t:'s',opt:['نعم','لا'],sh:a=>a.sup==='مدعوم'},
+ {id:'sal',lab:'كم الراتب الشهري؟',t:'n'},
+ {id:'mon',lab:'عدد الأشهر للتمويل',t:'r',min:12,max:360,val:240},
+ {id:'profit',lab:'نسبة هامش الربح السنوي (%)',t:'n'},
+ {id:'hasC',lab:'هل لديك التزامات؟',t:'s',opt:['نعم','لا']}
 ];
 
-/* ---------- دوال الواجهة ---------- */
 function curQ(){
- if(s<Q.length)return Q[s];
+ if(step<Q.length) return Q[step];
  if(A.hasC==='نعم'){
    const c=A.commitments[cIdx]||{};
-   if(!c.t)   return{id:'cT',t:'s',label:'نوع الالتزام',opt:['قرض شخصي','قرض سيارة','قرض استهلاكي']};
-   if(!c.pay) return{id:'cPay',t:'n',label:'كم القسط الشهري؟'};
-   if(!c.m)   return{id:'cMon',t:'s',label:'عدد الأشهر المتبقية',opt:[...Array(60).keys()].map(i=>(i+1)+' شهر')};
-   if(c.t==='قرض سيارة'&&c.askB==null)return{id:'cAskB',t:'s',label:'هل لديك دفعة أخيرة؟',opt:['نعم','لا']};
-   if(c.t==='قرض سيارة'&&c.askB==='نعم'&&!c.ball)return{id:'cBall',t:'n',label:'مبلغ الدفعة الأخيرة؟'};
-   if(!c.more)return{id:'cMore',t:'s',label:'هل لديك التزامات أخرى؟',opt:['نعم','لا']};
+   if(!c.t) return{id:'cT',t:'s',lab:'نوع الالتزام',opt:['قرض شخصي','قرض سيارة','قرض استهلاكي']};
+   if(!c.pay) return{id:'cPay',t:'n',lab:'قيمة القسط الشهري؟'};
+   if(!c.m) return{id:'cM',t:'n',lab:'عدد الأشهر المتبقية؟'};
+   if(c.t==='قرض سيارة'&&c.askB==null) return{id:'cAskB',t:'s',lab:'دفعة أخيرة؟',opt:['نعم','لا']};
+   if(c.t==='قرض سيارة'&&c.askB==='نعم'&&!c.ball) return{id:'cBall',t:'n',lab:'مبلغ الدفعة الأخيرة؟'};
+   if(!c.more) return{id:'cMore',t:'s',lab:'هل لديك التزامات أخرى؟',opt:['نعم','لا']};
  }
  return null;
 }
 
 function show(){
  const zone=document.getElementById('q');zone.innerHTML='';
- const q=curQ();if(!q){calc();document.getElementById('mainBtn').textContent='أعد الحسبة';return}
- if(q.sh&&!q.sh(A)){s++;show();return}
+ const q=curQ();
+ if(!q){calculate();document.getElementById('mainBtn').textContent='أعد الحسبة';return}
+ if(q.sh&&!q.sh(A)){step++;show();return}
  const wrap=document.createElement('div');wrap.className='fade';
- wrap.innerHTML=`<label>${q.label}</label><br>`;
+ wrap.innerHTML=`<label>${q.lab}</label><br>`;
  if(q.t==='s'){
    const sel=document.createElement('select');sel.id=q.id;q.opt.forEach(o=>sel.add(new Option(o,o)));wrap.appendChild(sel);
  }else if(q.t==='n'){
    const inp=document.createElement('input');inp.type='number';inp.id=q.id;wrap.appendChild(inp);
- }else{ // range
+ }else{
    const r=document.createElement('input');r.type='range';r.min=q.min;r.max=q.max;r.step=1;r.value=q.val;r.id=q.id;
-   const sp=document.createElement('span');sp.id='val';sp.textContent=q.val;
-   r.oninput=()=>sp.textContent=r.value;wrap.append(r,' ',sp,' شهر');
+   const s=document.createElement('span');s.id='val';s.textContent=q.val;
+   r.oninput=()=>s.textContent=r.value;wrap.append(r,' ',s,' شهر');
  }
  zone.appendChild(wrap);
 }
 
 function next(){
  const q=curQ();if(!q)return;
- const v=document.getElementById(q.id)?.value||null;
- if(s<Q.length){
-   A[q.id]=q.t==='n'?parseFloat(v):v;s++;
+ const v=document.getElementById(q.id)?.value;
+ if(step<Q.length){
+   A[q.id]=q.t==='n'?parseFloat(v):v;step++;
    if(q.id==='type'){
      const r=Q.find(x=>x.id==='mon');
      r.max=(v==='تمويل شخصي')?60:360;
@@ -99,87 +98,69 @@ function next(){
  show();
 }
 
-/* ---------- الحسبة ---------- */
-function calc(){
- const sal=+A.sal||0,months=+A.mon||0,yrs=months/12,profit=+A.profit||0;
- const type=A.type;
- const commitments=A.commitments||[];
+function calculate(){
+ const sal=+A.sal||0,months=+A.mon||0,yrs=months/12,pr=+A.profit||0,type=A.type;
+ let rate=0,maxCap=0,addCom=false;
+ if(type==='تمويل شخصي'){rate=0.45;maxCap=sal*0.3333;addCom=true;}
+ else{rate=(sal>=15000||(A.sup==='مدعوم'&&A.bundle==='لا'))?0.65:0.55;maxCap=sal*rate;}
 
- // تحديد النسبة والحدود
- let rate,maxPersonal,addCommodity=false;
- if(type==='تمويل شخصي'){rate=0.45;maxPersonal=sal*0.3333;addCommodity=true;}
- else{
-   rate=(sal>=15000||(A.sup==='مدعوم'&&A.bundle==='لا'))?0.65:0.55;
-   maxPersonal=sal*rate;
- }
-
- // بناء جدول الالتزامات الشهرية
+ // جدول الالتزامات
  const sched=Array(months).fill(0);
- commitments.forEach(c=>{
+ A.commitments.forEach(c=>{
    for(let i=0;i<Math.min(c.m||0,months);i++)sched[i]+=c.pay||0;
    if(c.t==='قرض سيارة'&&c.askB==='نعم'&&c.ball){
-     const start=c.m,end=Math.min(start+24,months);
-     for(let i=start;i<end;i++)sched[i]+=c.ball/24;
+     const portion=c.ball/24;
+     for(let i=Math.max(c.m,months-24);i<months;i++)sched[i]+=portion;
    }
  });
 
- // بناء جدول الأقساط الجديدة
+ // جدول أقساط التمويل الجديد حسب المتاح
  const pay=[];
  for(let i=0;i<months;i++){
-   const used=sched[i];
-   const limit=sal*rate;
-   let avail=limit-used;
-   if(avail<0)avail=0;
-   if(type==='تمويل شخصي')avail=Math.min(avail,maxPersonal);
+   const used=sched[i],limit=sal*rate;
+   let avail=Math.max(0,limit-used);
+   if(type==='تمويل شخصي')avail=Math.min(avail,maxCap);
    pay[i]=avail;
  }
 
- // إذا الالتزامات = الحد الأعلى → أول قسط = 0
- // (منطقنا بالفعل ينتج 0 لأن avail=0)
-
- // حساب التمويل
- const tot=pay.reduce((a,b)=>a+b,0);
- const factor=yrs*profit/100+1;
- const net=tot/factor;
+ const total=pay.reduce((a,b)=>a+b,0);
+ const factor=1+yrs*pr/100;
+ const net=total/factor;
  let admin=Math.min(net*0.01,5000);
- let vat=admin===5000?750:admin*0.15;
- let commodity=addCommodity?net*0.01:0;
- const fees=admin+vat+commodity;
- const finalNet=net-fees;
- const profitWO=tot-net;
- const profitW=tot-finalNet;
+ let vat=(admin===5000)?750:admin*0.15;
+ let com=addCom?net*0.01:0;
+ let fees=admin+vat+com;
+ let finalNet=net-fees;
+ const profWO=total-net,profW=total-finalNet;
 
- // إبراز القسط المتغير
- const firstPay=pay.find(p=>p>0)||0;
+ const firstIdx=pay.findIndex(x=>x>0);const firstPay=firstIdx>-1?pay[firstIdx]:0;
  const maxPay=Math.max(...pay);
 
  document.getElementById('q').innerHTML=`
-  <h2>نتيجة الحاسبة:</h2>
-  <p><strong>قسطك خلال أول فترة:</strong> ${Math.round(firstPay)} ريال</p>
-  <p><strong>ثم قسطك بعد انتهاء الالتزامات:</strong> ${Math.round(maxPay)} ريال</p>
-  <p><strong>اجمالي التمويل مع الأرباح:</strong> ${Math.round(tot)} ريال</p>
-  <p><strong>معامل الربح:</strong> ${factor.toFixed(4)}</p>
-  <p><strong>التمويل الصافي قبل الرسوم:</strong> ${Math.round(net)} ريال</p>
-  <p><strong>الرسوم الإدارية:</strong> ${Math.round(admin)} ريال</p>
-  <p><strong>الضريبة على الرسوم:</strong> ${Math.round(vat)} ريال</p>
-  ${addCommodity?`<p><strong>رسوم السلع:</strong> ${Math.round(commodity)} ريال</p>`:''}
-  <p><strong>الربح دون الرسوم:</strong> ${Math.round(profitWO)} ريال</p>
-  <p><strong>الربح مع الرسوم:</strong> ${Math.round(profitW)} ريال</p>
-  <p><strong>التمويل الصافي النهائي:</strong> ${Math.round(finalNet)} ريال</p>
+ <h2>نتيجة الحاسبة:</h2>
+ <p><strong>قسطك خلال أول فترة:</strong> ${Math.round(firstPay)} ريال</p>
+ <p><strong>ثم قسطك بعد انتهاء الالتزامات:</strong> ${Math.round(maxPay)} ريال</p>
+ <p><strong>إجمالي التمويل مع الأرباح:</strong> ${Math.round(total)} ريال</p>
+ <p><strong>معامل الربح:</strong> ${factor.toFixed(4)}</p>
+ <p><strong>التمويل الصافي قبل الرسوم:</strong> ${Math.round(net)} ريال</p>
+ <p><strong>الرسوم الإدارية:</strong> ${Math.round(admin)} ريال</p>
+ <p><strong>الضريبة على الرسوم:</strong> ${Math.round(vat)} ريال</p>
+ ${addCom?`<p><strong>رسوم السلع:</strong> ${Math.round(com)} ريال</p>`:''}
+ <p><strong>الربح دون الرسوم:</strong> ${Math.round(profWO)} ريال</p>
+ <p><strong>الربح مع الرسوم:</strong> ${Math.round(profW)} ريال</p>
+ <p><strong>التمويل الصافي النهائي:</strong> ${Math.round(finalNet)} ريال</p>
  `;
 }
 
 show();
-
-/* ---------- التاريخ ---------- */
-function tick(){const d=new Date();document.getElementById('datetime').textContent=
-`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;}
 </script>
 
 <footer>
- <p>جميع الحقوق محفوظة – سرعة تملك العقار والحلول التمويلية – <span id="datetime"></span></p>
+ <p>جميع الحقوق محفوظة – سرعة تملك العقار والحلول التمويلية – <span id="dt"></span></p>
 </footer>
 <script>
+function tick(){const d=new Date();document.getElementById('dt').textContent=
+`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;}
 setInterval(tick,1000);tick();
 </script>
 </body>

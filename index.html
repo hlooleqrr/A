@@ -22,17 +22,24 @@
   <p>حاسبة التمويل التقريبية</p>
 </header>
 <div class="container" id="form">
-  <button onclick="start()">ابدأ الحاسبة</button>
+  <button id="startBtn" onclick="start()">ابدأ الحاسبة</button>
   <div id="question"></div>
 </div>
 
 <script>
 let answers={},commitments=[],curCommit={};
+
 function show(html){
-  document.getElementById('question').innerHTML=
-    '<div class="fade-in">'+html+'</div>';
+  document.getElementById('question').innerHTML='<div class="fade-in">'+html+'</div>';
 }
-function start(){ askFinanceType(); }
+
+function start(){
+  document.getElementById("startBtn").innerText = "أعد الحسبة";
+  answers = {};
+  commitments = [];
+  curCommit = {};
+  askFinanceType();
+}
 
 function askFinanceType(){
   show(`
@@ -86,10 +93,14 @@ function saveProfit(){ answers.profitMargin=parseFloat(document.getElementById('
 
 function askDuration(){
   const max=answers.financeType==='تمويل شخصي'?60:360;
+  const defaultVal = 240;
   show(`
     <label>مدة التمويل (أشهر):</label><br>
     <select id="dur">
-      ${Array.from({length: max-11}, (_,i)=>`<option value="${i+12}">${i+12} شهر</option>`).join('')}
+      ${Array.from({length: max-11}, (_,i)=>{
+        const val = i+12;
+        return `<option value="${val}" ${val===defaultVal?"selected":""}>${val} شهر</option>`;
+      }).join('')}
     </select><br>
     <button onclick="saveDuration()">التالي</button>
   `);
@@ -213,7 +224,7 @@ function calculate(){
     available -= monthly;
   });
 
-  if(available<=0){
+  if(available <= 0){
     show(`<h2>عذرًا</h2><p>لا يمكن تقديم تمويل حاليًا بسبب التزاماتك الحالية.</p>
     <p>للتواصل: 0506214458 - hlooleqrr.com</p>`);
     return;
@@ -237,7 +248,7 @@ function calculate(){
   const commodity = addCommodity ? netFinance * 0.01 : 0;
   let netAfter = netFinance - (fee + vat + commodity);
 
-  // ✅ خصم دفعة السيارة الأخيرة من التمويل النهائي فقط
+  // خصم دفعة السيارة الأخيرة من صافي التمويل
   commitments.forEach(c => {
     if (c.type === 'قرض سيارة' && c.lastPayment) {
       netAfter -= c.lastPayment;

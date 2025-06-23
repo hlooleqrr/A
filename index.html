@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>سرعة تملك العقار – حاسبة التمويل</title>
-
   <style>
     body{font-family:'Tajawal',sans-serif;background:#f4f6f8;margin:0;text-align:center}
     header{background:#005c48;color:#fff;padding:24px 10px}
@@ -17,30 +16,24 @@
     @keyframes fadeIn{to{opacity:1;transform:translateY(0)}}
   </style>
 </head>
-
 <body>
 <header>
   <h1>سرعة تملك العقار والحلول التمويلية</h1>
   <p>حاسبة التمويل التقريبية</p>
 </header>
-
 <div class="container" id="form">
-  <button onclick="start()"></button>
+  <button onclick="start()">ابدأ الحاسبة</button>
   <div id="question"></div>
 </div>
 
 <script>
-/* ---------- متغيّرات رئيسية ---------- */
 let answers={},commitments=[],curCommit={};
-
-/* ---------- أدوات مساعدة ---------- */
 function show(html){
   document.getElementById('question').innerHTML=
     '<div class="fade-in">'+html+'</div>';
 }
 function start(){ askFinanceType(); }
 
-/* ---------- الأسئلة الأساسيّة ---------- */
 function askFinanceType(){
   show(`
     <label>نوع التمويل:</label><br>
@@ -55,7 +48,6 @@ function saveFinanceType(){
   answers.financeType=document.getElementById('ft').value;
   (answers.financeType==='تمويل عقاري')?askSupport():askSalary();
 }
-
 function askSupport(){
   show(`
     <label>هل التمويل مدعوم؟</label><br>
@@ -67,7 +59,6 @@ function saveSupport(){
   answers.supported=document.getElementById('sup').value;
   (answers.supported==='مدعوم')?askBundle():askSalary();
 }
-
 function askBundle(){
   show(`
     <label>هل ترغب بدفعة مقدّمة من سكني؟</label><br>
@@ -76,7 +67,6 @@ function askBundle(){
   `);
 }
 function saveBundle(){ answers.bundle=document.getElementById('bun').value; askSalary(); }
-
 function askSalary(){
   show(`
     <label>الراتب الشهري (ريال):</label><br>
@@ -85,7 +75,6 @@ function askSalary(){
   `);
 }
 function saveSalary(){ answers.salary=parseFloat(document.getElementById('sal').value)||0; askProfit(); }
-
 function askProfit(){
   show(`
     <label>هامش الربح السنوي (%):</label><br>
@@ -99,14 +88,13 @@ function askDuration(){
   const max=answers.financeType==='تمويل شخصي'?60:360;
   show(`
     <label>مدة التمويل (أشهر):</label><br>
-    <input type="range" id="dur" min="12" max="${max}" value="12"
-           oninput="document.getElementById('dVal').innerText=this.value">
-    <br><span id="dVal">12</span> شهر<br>
+    <select id="dur">
+      ${Array.from({length: max-11}, (_,i)=>`<option value="${i+12}">${i+12} شهر</option>`).join('')}
+    </select><br>
     <button onclick="saveDuration()">التالي</button>
   `);
 }
 function saveDuration(){ answers.duration=parseInt(document.getElementById('dur').value); askHasCommit(); }
-
 function askHasCommit(){
   show(`
     <label>هل لديك التزامات؟</label><br>
@@ -117,8 +105,6 @@ function askHasCommit(){
 function saveHasCommit(){
   (document.getElementById('hasC').value==='نعم')?askCommitType():calculate();
 }
-
-/* ---------- إدخال التزام واحد ---------- */
 function askCommitType(){
   show(`
     <label>نوع الالتزام:</label><br>
@@ -131,7 +117,6 @@ function askCommitType(){
   `);
 }
 function saveCommitType(){ curCommit.type=document.getElementById('ctype').value; askCommitAmount(); }
-
 function askCommitAmount(){
   show(`
     <label>قيمة القسط الشهري:</label><br>
@@ -140,20 +125,19 @@ function askCommitAmount(){
   `);
 }
 function saveCommitAmount(){ curCommit.amount=parseFloat(document.getElementById('camt').value)||0; askCommitMonths(); }
-
 function askCommitMonths(){
   show(`
     <label>الأشهر المتبقية:</label><br>
-    <input type="range" id="cmon" min="1" max="60" value="12"
-           oninput="document.getElementById('cmonVal').innerText=this.value">
-    <br><span id="cmonVal">12</span> شهر<br>
+    <select id="cmon">
+      ${Array.from({length:60},(_,i)=>`<option value="${i+1}">${i+1} شهر</option>`).join('')}
+    </select><br>
     <button onclick="saveCommitMonths()">التالي</button>
   `);
 }
-function saveCommitMonths(){ curCommit.months=parseInt(document.getElementById('cmon').value);
+function saveCommitMonths(){
+  curCommit.months=parseInt(document.getElementById('cmon').value);
   (curCommit.type==='قرض سيارة')?askLastPayQ():finishCommit(0);
 }
-
 function askLastPayQ(){
   show(`
     <label>هل لديك دفعة أخيرة؟</label><br>
@@ -164,7 +148,6 @@ function askLastPayQ(){
 function saveLastPayQ(){
   (document.getElementById('hasLast').value==='نعم')?askLastPay():finishCommit(0);
 }
-
 function askLastPay(){
   show(`
     <label>مبلغ الدفعة الأخيرة:</label><br>
@@ -173,14 +156,12 @@ function askLastPay(){
   `);
 }
 function saveLastPay(){ finishCommit(parseFloat(document.getElementById('lastPay').value)||0); }
-
 function finishCommit(last){
   curCommit.lastPayment=last;
   commitments.push({...curCommit});
   curCommit={};
   askMore();
 }
-
 function askMore(){
   show(`
     <label>هل لديك التزامات أخرى؟</label><br>
@@ -191,8 +172,6 @@ function askMore(){
 function saveMore(){
   (document.getElementById('more').value==='نعم')?askCommitType():calculate();
 }
-
-/* ---------- الحاسبة النهائية ---------- */
 function calculate(){
   const salary=answers.salary;
   const duration=answers.duration;
@@ -221,7 +200,6 @@ function calculate(){
 
   let allowedInstallment = salary * (deductionRate/100);
   let available = allowedInstallment;
-
   let totalCommit = 0;
   let commitInstall = 0;
 
@@ -257,7 +235,15 @@ function calculate(){
   if(vat > 750) vat = 750;
 
   const commodity = addCommodity ? netFinance * 0.01 : 0;
-  const netAfter = netFinance - (fee + vat + commodity);
+  let netAfter = netFinance - (fee + vat + commodity);
+
+  // ✅ خصم دفعة السيارة الأخيرة من التمويل النهائي فقط
+  commitments.forEach(c => {
+    if (c.type === 'قرض سيارة' && c.lastPayment) {
+      netAfter -= c.lastPayment;
+    }
+  });
+
   const finalAmount = netAfter + extraSupport;
 
   show(`
@@ -289,7 +275,5 @@ setInterval(()=>{
     ' '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0')+':'+now.getSeconds().toString().padStart(2,'0');
 },1000);
 </script>
-
 </body>
 </html>
-

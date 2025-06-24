@@ -5,17 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>حاسبة التمويل - سرعة تملك العقار</title>
   <style>
-    body {font-family:'Tajawal',sans-serif;background:#f4f6f8;margin:0;text-align:center}
-    header {background:#005c48;color:#fff;padding:20px}
-    .container {max-width:600px;margin:20px auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 0 15px rgba(0,0,0,.1)}
-    input,select,button {width:90%;padding:10px;margin:10px 0;font-size:16px;border-radius:5px;border:1px solid #ccc}
-    button {background:#00796b;color:#fff;border:none;cursor:pointer}
-    button:hover {background:#004d40}
-    .small-reset {font-size:13px;padding:5px 10px;margin-top:20px;background:#e0f0ff;color:#0056b3;border:none;cursor:pointer;border-radius:10px}
-    .small-reset:hover {background:#cce5ff}
-    footer {font-size:12px;color:#666;margin-top:40px;padding:10px}
-    .fade-in {opacity:0;transform:translateY(20px);animation:fadeInMove .6s forwards}
-    @keyframes fadeInMove {to {opacity:1;transform:translateY(0)}}
+    body{font-family:'Tajawal',sans-serif;background:#f4f6f8;margin:0;text-align:center}
+    header{background:#005c48;color:#fff;padding:20px}
+    .container{max-width:600px;margin:20px auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 0 15px rgba(0,0,0,.1)}
+    input,select,button{width:90%;padding:10px;margin:10px 0;font-size:16px;border-radius:5px;border:1px solid #ccc}
+    button{background:#00796b;color:#fff;border:none;cursor:pointer}
+    button:hover{background:#004d40}
+    .small-reset{font-size:14px;padding:6px 12px;margin-top:20px;background:#d0e6ff;color:#004080;border:none;cursor:pointer;border-radius:20px}
+    .small-reset:hover{background:#aacdee}
+    .slider-value{font-weight:bold;margin-top:5px}
+    footer{font-size:12px;color:#666;margin-top:40px;padding:10px}
+    .fade-in{opacity:0;transform:translateY(20px);animation:fadeInMove .6s forwards}
+    @keyframes fadeInMove{to{opacity:1;transform:translateY(0)}}
+    input[type=range]{-webkit-appearance:none;width:100%;height:8px;background:#ddd;border-radius:5px;outline:none}
+    input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;background:#00796b;border-radius:50%;cursor:pointer;transition:background .3s}
+    input[type=range]::-webkit-slider-thumb:hover{background:#004d40}
   </style>
 </head>
 <body>
@@ -26,11 +30,14 @@
 
 <div class="container" id="form-container">
   <div id="question"></div>
-  <button id="mainButton" onclick="handleStartOrReset()">ابدأ الحسبة</button>
   <div id="nextContainer" style="display:none">
     <button onclick="nextQuestion()">التالي</button>
   </div>
 </div>
+
+<footer>
+  <p>جميع الحقوق محفوظة - سرعة تملك العقار والحلول التمويلية - <span id="datetime"></span></p>
+</footer>
 
 <script>
 let answers = { commitments: [] }, step = 0, commitmentStep = 0, currentCommitment = {};
@@ -58,7 +65,7 @@ const commitmentQuestions = [
 function handleStartOrReset(){
   if(!hasStarted){
     hasStarted = true;
-    document.getElementById('mainButton').style.display = 'none';
+    document.getElementById('form-container').insertAdjacentHTML('beforeend','<button class="small-reset" onclick="resetCalc()">🔁 إعادة الحسبة</button>');
     showQuestion();
   }else{
     resetCalc();
@@ -70,7 +77,8 @@ function resetCalc(){
   step = commitmentStep = 0;
   currentCommitment = {};
   hasStarted = true;
-  document.getElementById('mainButton').style.display = 'none';
+  document.querySelector('.small-reset')?.remove();
+  document.getElementById('form-container').insertAdjacentHTML('beforeend','<button class="small-reset" onclick="resetCalc()">🔁 إعادة الحسبة</button>');
   showQuestion();
 }
 
@@ -89,6 +97,7 @@ function showQuestion(){
     document.getElementById('nextContainer').style.display = 'none';
     calculate(); return;
   }
+
   const div = document.createElement('div'); div.classList.add('fade-in');
   div.innerHTML = `<label>${q.label}</label><br>`;
   if(q.type==='select'){
@@ -96,9 +105,9 @@ function showQuestion(){
     q.options.forEach(opt=>{ sel.innerHTML += `<option value="${opt}">${opt}</option>`; });
     div.appendChild(sel);
   }else if(q.type==='range'){
-    div.innerHTML += `<input type="range" id="${q.id}" min="${q.min}" max="${q.max}" value="${q.value}" step="1"
+    div.innerHTML += `<input type="range" id="${q.id}" min="${q.min}" max="${q.max}" value="${q.value}"
                        oninput="document.getElementById('${q.id}Val').textContent=this.value">
-                      <br><span id="${q.id}Val">${q.value}</span> شهر`;
+                      <div class="slider-value"><span id="${q.id}Val">${q.value}</span> شهر</div>`;
   }else{
     div.innerHTML += `<input type="number" id="${q.id}">`;
   }
@@ -108,6 +117,7 @@ function showQuestion(){
 function nextQuestion(){
   const q = step < generalQuestions.length ? generalQuestions[step] : commitmentQuestions[commitmentStep];
   const val = document.getElementById(q.id)?.value;
+
   if(step < generalQuestions.length){
     answers[q.id] = val;
     step++;
@@ -115,6 +125,7 @@ function nextQuestion(){
     if(q.id==='months') currentCommitment[q.id] = parseInt(val);
     else if(q.id==='amount' || q.id==='balloonAmount') currentCommitment[q.id] = parseFloat(val);
     else currentCommitment[q.id] = val;
+
     if(q.id==='more'){
       answers.commitments.push(currentCommitment);
       currentCommitment = {};
@@ -129,7 +140,7 @@ function nextQuestion(){
 function calculate(){
   const salary = parseFloat(answers.salary),
         months = parseInt(answers.months),
-        years = months / 12,
+        years  = months / 12,
         profitMargin = parseFloat(answers.profitMargin),
         { financeType, supported, bundle } = answers;
 
@@ -178,11 +189,13 @@ function calculate(){
 
   let supportText = '';
   if(financeType === 'تمويل عقاري' && supported === 'مدعوم'){
-    const sup = salary < 10000 ? 150000 : 100000;
     if(bundle === 'نعم'){
+      const sup = salary < 10000 ? 150000 : 100000;
       supportText = `<p><strong>دعم حكومي مضاف:</strong> ${sup.toLocaleString()} ريال</p>`;
     }else{
-      const dist = Math.min(months, 240), monthly = Math.round(sup / dist);
+      const sup = salary < 10000 ? 150000 : 100000,
+            dist = Math.min(months, 240),
+            monthly = Math.round(sup / dist);
       supportText = `<p><strong>تم توزيع دعم الدفعة المقدمة (${sup.toLocaleString()} ريال) على ${dist} شهر = ${monthly.toLocaleString()} ريال لكل شهر</strong></p>`;
     }
   }
@@ -205,13 +218,10 @@ function calculate(){
     ${supportText}
     <h3 style="margin-top:20px;">📞 للتواصل مع سرعة تملك العقار والحلول التمويلية</h3>
     <p>0506214458 – hlooleqrr.com</p>
-    <button class="small-reset" onclick="resetCalc()">🔁 إعادة الحسبة</button>
   `;
   document.getElementById('question').innerHTML = html;
 }
-</script>
 
-<script>
 function updateDateTime(){
   const n = new Date();
   document.getElementById('datetime').innerText =
@@ -220,9 +230,5 @@ function updateDateTime(){
 }
 setInterval(updateDateTime, 1000); updateDateTime();
 </script>
-
-<footer>
-  <p>جميع الحقوق محفوظة - سرعة تملك العقار والحلول التمويلية - <span id="datetime"></span></p>
-</footer>
 </body>
 </html>

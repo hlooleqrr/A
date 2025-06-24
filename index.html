@@ -3,38 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <title>حاسبة التمويل</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: 'Tajawal', sans-serif;
       background: #f4f6f8;
       margin: 0;
       text-align: center;
-      font-size: 30px;
+      font-size: 28px;
     }
     header {
       background: #005c48;
       color: #fff;
-      padding: 25px;
-      font-size: 32px;
+      padding: 30px 15px;
+      font-size: 30px;
     }
     .container {
       max-width: 700px;
-      margin: 25px auto;
+      margin: 20px auto;
       background: #fff;
-      padding: 30px;
+      padding: 30px 15px;
       border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,.1);
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
     }
     input, select, button {
-      width: 95%;
+      width: 100%;
       padding: 24px;
-      margin: 22px 0;
+      margin: 20px 0;
       font-size: 32px;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 1px solid #ccc;
+      box-sizing: border-box;
     }
     select {
-      height: 85px;
+      height: 90px;
     }
     button {
       background: #00796b;
@@ -46,28 +48,27 @@
       background: #004d40;
     }
     .small-reset {
-      font-size: 28px;
-      padding: 14px 22px;
-      margin-top: 24px;
+      font-size: 26px;
+      padding: 16px;
       background: #e3f2fd;
       color: #1565c0;
       border: none;
       cursor: pointer;
-      border-radius: 15px;
+      border-radius: 12px;
     }
     .small-reset:hover {
       background: #bbdefb;
     }
     footer {
-      font-size: 24px;
+      font-size: 18px;
       color: #666;
       margin-top: 40px;
-      padding: 15px;
+      padding: 10px;
     }
     .fade-in {
       opacity: 0;
       transform: translateY(20px);
-      animation: fadeInMove .6s forwards;
+      animation: fadeInMove .5s forwards;
     }
     @keyframes fadeInMove {
       to {
@@ -76,8 +77,9 @@
       }
     }
     h2, h3, p {
-      margin: 14px 0;
-      line-height: 1.6;
+      margin: 12px 0;
+      line-height: 1.5;
+      font-size: 28px;
     }
   </style>
 </head>
@@ -260,10 +262,14 @@ function calculate(){
   <p><strong>إجمالي التمويل مع الأرباح:</strong> ${totalInst.toFixed(0)} ريال</p>
   <h3 style="margin-top:20px;">📞 للتواصل مع سرعة تملك العقار والحلول التمويلية</h3>
   <p>0506214458 – hlooleqrr.com</p>
+  <button class="small-reset" onclick="resetCalc()">🔁 إعادة الحسبة</button>
   `;
   document.getElementById('question').innerHTML = html;
 }
 </script>
+<footer>
+  <p>جميع الحقوق محفوظة - سرعة تملك العقار والحلول التمويلية - <span id="datetime"></span></p>
+</footer>
 <script>
 function updateDateTime(){
   const n = new Date();
@@ -273,8 +279,5 @@ function updateDateTime(){
 }
 setInterval(updateDateTime, 1000); updateDateTime();
 </script>
-<footer>
-  <p>جميع الحقوق محفوظة - سرعة تملك العقار والحلول التمويلية - <span id="datetime"></span></p>
-</footer>
 </body>
 </html>

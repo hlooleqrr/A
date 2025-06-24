@@ -57,7 +57,9 @@ const commitmentQuestions = [
   { id:'balloon',label:'هل لديك دفعة أخيرة؟',type:'select',options:['نعم','لا'],show:c=>c.type==='قرض سيارة' },
   { id:'balloonAmount',label:'كم مبلغ الدفعة الأخيرة؟',type:'number',show:c=>c.balloon==='نعم' },
   { id:'more',label:'هل لديك التزامات أخرى؟',type:'select',options:['نعم','لا'] }
-];function handleStartOrReset(){
+];
+
+function handleStartOrReset(){
   if(!hasStarted){
     hasStarted = true;
     document.getElementById('mainButton').style.display = 'none';
@@ -129,7 +131,9 @@ function nextQuestion(){
     commitmentStep++;
   }
   showQuestion();
-}function calculate(){
+}
+
+function calculate(){
   const salary = parseFloat(answers.salary),
         months = parseInt(answers.months),
         years  = months / 12,
@@ -152,28 +156,26 @@ function nextQuestion(){
   let commits = [...answers.commitments].sort((a,b)=>parseInt(a.months)-parseInt(b.months));
   let schedule = [], curMonth = 0;
 
+  const balloonMap = {};
+  commits.forEach(c=>{
+    if(c.type==='قرض سيارة' && c.balloon==='نعم' && c.balloonAmount){
+      const start = parseInt(c.months);
+      const end = Math.min(start + 24, months);
+      const amountPerMonth = c.balloonAmount / (end - start);
+      for(let m=start; m<end; m++){
+        balloonMap[m] = (balloonMap[m] || 0) + amountPerMonth;
+      }
+    }
+  });
+
   for(let i=0;i<=commits.length;i++){
     const cut = i<commits.length?parseInt(commits[i].months):months,
           period = cut - curMonth;
 
     if(period>0){
-      const active = commits.slice(i).reduce((s,c)=>{
-        let balloon = 0;
-        if(c.type==='قرض سيارة' && c.balloon==='نعم' && c.balloonAmount){
-          const distributeStart = parseInt(c.months); // تبدأ بعد انتهاء القسط
-          const distributeEnd = Math.min(distributeStart + 24, months);
-          const distributeMonths = distributeEnd - distributeStart;
-          balloon = distributeMonths > 0 ? c.balloonAmount / distributeMonths : 0;
-          if(curMonth >= distributeStart && curMonth < distributeEnd){
-            balloon = c.balloonAmount / distributeMonths;
-          } else {
-            balloon = 0;
-          }
-        }
-        return s + (c.amount || 0) + balloon;
-      }, 0);
-
-      const avail = allowedInst - active;
+      const active = commits.slice(i).reduce((s,c)=>s + (c.amount || 0), 0);
+      const balloon = Array.from({length:period},(_,j)=>balloonMap[curMonth + j] || 0).reduce((a,b)=>a+b,0)/period;
+      const avail = allowedInst - active - balloon;
       schedule.push({months:period,inst:avail});
       curMonth = cut;
     }
@@ -212,7 +214,9 @@ function nextQuestion(){
             monthly = Math.round(sup / dist);
       supportText = `<p><strong>تم توزيع دعم الدفعة المقدمة (${sup.toLocaleString()} ريال) على ${dist} شهر = ${monthly.toLocaleString()} ريال لكل شهر</strong></p>`;
     }
-  }  let html = '<h2>نتيجة الحاسبة:</h2>';
+  }
+
+  let html = '<h2>نتيجة الحاسبة:</h2>';
   schedule.forEach((p,i)=>{
     const from = schedule.slice(0,i).reduce((s,x)=>s+x.months,0)+1,
           to   = from + p.months - 1;

@@ -1,5 +1,4 @@
-<!-- الكود يبدأ من هنا -->
-<!DOCTYPE html>
+l<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
@@ -218,19 +217,13 @@ function calculate(){
       balloonPhases.push({ start, end, value: c.balloonAmount / 24 });
     }
   });
-  let futurePhases = [], allZero = true;
+  let futurePhases = [];
   for(let m = 1; m <= months; m++) {
     let activeCommits = commits.filter(c => m <= parseInt(c.months)).reduce((sum, c) => sum + (c.amount || 0), 0);
     let balloonExtra = balloonPhases.reduce((sum, b) => (m >= b.start && m < b.end) ? sum + b.value : sum, 0);
     let available = allowedInst - activeCommits - balloonExtra;
     if(financeType==='تمويل شخصي') available = Math.min(available, salary * 0.3333);
-    if (available < 0) available = 0;
-    if (available > 0) allZero = false;
     futurePhases.push({ month: m, inst: available });
-  }
-  if (allZero) {
-    document.getElementById('question').innerHTML = '<h2 style="color:red">نعتذر، لا يمكن تقديم تمويل في هذه الحالة.</h2>';
-    return;
   }
   let finalPhases = [];
   for (let i = 0; i < futurePhases.length; i++) {

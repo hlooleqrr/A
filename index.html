@@ -2,7 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>حاسبة التمويل</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>حاسبة التمويل - سرعة تملك العقار</title>
   <style>
     body{font-family:'Tajawal',sans-serif;background:#f4f6f8;margin:0;text-align:center}
     header{background:#005c48;color:#fff;padding:20px}
@@ -23,7 +24,7 @@
   <p>حاسبة التمويل التقريبية</p>
 </header>
 <div class="container" id="form-container">
-  <div id="question"></div>
+  <div id="question" style="font-size: 18px;"></div>
   <button id="mainButton" onclick="handleStartOrReset()">ابدأ الحسبة</button>
   <div id="nextContainer" style="display:none">
     <button onclick="nextQuestion()">التالي</button>
@@ -32,10 +33,14 @@
     <button class="small-reset" onclick="resetCalc()">🔁 إعادة الحسبة</button>
   </div>
 </div>
+
+<!-- سكربت الأسئلة والحسابات والنتائج -->
 <script>
+// المتغيرات الأساسية
 let answers = { commitments: [] }, step = 0, commitmentStep = 0, currentCommitment = {};
 let hasStarted = false;
 
+// الأسئلة الرئيسية
 const generalQuestions = [
   { id:'financeType',label:'نوع التمويل',type:'select',options:['تمويل عقاري','تمويل شخصي'] },
   { id:'supported',label:'هل التمويل مدعوم؟',type:'select',options:['مدعوم','غير مدعوم'],show:a=>a.financeType==='تمويل عقاري' },
@@ -47,6 +52,7 @@ const generalQuestions = [
   { id:'hasCommitments',label:'هل لديك التزامات؟',type:'select',options:['نعم','لا'] }
 ];
 
+// أسئلة الالتزامات
 const commitmentQuestions = [
   { id:'type',label:'نوع الالتزام',type:'select',options:['قرض شخصي','قرض سيارة','قرض استهلاكي'] },
   { id:'amount',label:'كم القسط الشهري؟',type:'number' },
@@ -56,6 +62,7 @@ const commitmentQuestions = [
   { id:'more',label:'هل لديك التزامات أخرى؟',type:'select',options:['نعم','لا'] }
 ];
 
+// بدء أو إعادة الحسبة
 function handleStartOrReset(){
   if(!hasStarted){
     hasStarted = true;
@@ -65,6 +72,7 @@ function handleStartOrReset(){
   }else{ resetCalc(); }
 }
 
+// إعادة الحسبة
 function resetCalc(){
   answers = { commitments: [] };
   step = commitmentStep = 0;
@@ -75,6 +83,7 @@ function resetCalc(){
   showQuestion();
 }
 
+// عرض السؤال
 function showQuestion(){
   const cont = document.getElementById('question');
   cont.innerHTML = '';
@@ -101,6 +110,7 @@ function showQuestion(){
   cont.appendChild(div);
 }
 
+// التالي
 function nextQuestion(){
   const q = step < generalQuestions.length ? generalQuestions[step] : commitmentQuestions[commitmentStep];
   const el = document.getElementById(q.id);
@@ -126,6 +136,7 @@ function nextQuestion(){
   showQuestion();
 }
 
+// الحسبة النهائية
 function calculate(){
   const salary = parseFloat(answers.salary),
         months = parseInt(answers.months),
@@ -154,7 +165,7 @@ function calculate(){
           period = cut - curMonth;
 
     if(period>0){
-      const active = commits.slice(i).reduce((s,c)=>{
+      const active = commits.reduce((s,c)=>{
         let balloon = 0;
         if(c.type==='قرض سيارة' && c.balloon==='نعم' && c.balloonAmount){
           const distributeStart = parseInt(c.months);
@@ -163,7 +174,7 @@ function calculate(){
             balloon = c.balloonAmount / 24;
           }
         }
-        return s + (c.amount || 0) + balloon;
+        return s + (c.months > curMonth ? (c.amount || 0) : 0) + balloon;
       }, 0);
 
       const avail = allowedInst - active;
@@ -178,8 +189,7 @@ function calculate(){
   if (anyNegative || allZero) {
     document.getElementById('question').innerHTML = `
       <h2>عذرًا، لا يمكن الحصول على التمويل</h2>
-      <p>بسبب أن الالتزامات الحالية تتجاوز نسبة الاستقطاع المسموح بها (${deductionRate}%)</p>
-      <p>يرجى تقليل الالتزامات أو مراجعة البنك لمعرفة خيارات الدعم المتاحة.</p>
+      <p>الالتزامات تتجاوز الحد المسموح (${deductionRate}%)</p>
     `;
     return;
   }
@@ -203,7 +213,7 @@ function calculate(){
       const sup = salary < 10000 ? 150000 : 100000,
             dist = Math.min(months, 240),
             monthly = Math.round(sup / dist);
-      supportText = `<p><strong>تم توزيع دعم الدفعة المقدمة (${sup.toLocaleString()} ريال) على ${dist} شهر = ${monthly.toLocaleString()} ريال لكل شهر</strong></p>`;
+      supportText = `<p><strong>تم توزيع دعم الدفعة (${sup.toLocaleString()} ريال) على ${dist} شهر = ${monthly.toLocaleString()} ريال لكل شهر</strong></p>`;
     }
   }
 
@@ -215,22 +225,22 @@ function calculate(){
   });
 
   html += `
-  <p><strong>التمويل الصافي بعد خصم الرسوم النهائي:</strong> ${finalNet.toFixed(0)} ريال</p>
+  <p><strong>التمويل الصافي بعد خصم الرسوم:</strong> ${finalNet.toFixed(0)} ريال</p>
   ${supportText}
-  <p><strong>التمويل الصافي قبل خصم الرسوم:</strong> ${netFinance.toFixed(0)} ريال</p>
+  <p><strong>التمويل قبل الرسوم:</strong> ${netFinance.toFixed(0)} ريال</p>
   <p><strong>الربح دون الرسوم:</strong> ${(totalInst - netFinance).toFixed(0)} ريال</p>
   <p><strong>الربح مع الرسوم:</strong> ${totalProfitWithFees.toFixed(0)} ريال</p>
-  <p><strong>معامل الربح:</strong> ${profitFactor.toFixed(3)}</p>
   <p><strong>الرسوم الإدارية:</strong> ${adminFee.toFixed(0)} ريال</p>
-  <p><strong>ضريبة الرسوم:</strong> ${vat.toFixed(0)} ريال</p>
+  <p><strong>الضريبة:</strong> ${vat.toFixed(0)} ريال</p>
   ${addCommodityFee ? `<p><strong>رسوم السلع:</strong> ${commodityFee.toFixed(0)} ريال</p>` : ''}
-  <p><strong>إجمالي التمويل مع الأرباح:</strong> ${totalInst.toFixed(0)} ريال</p>
-  <h3 style="margin-top:20px;">📞 للتواصل مع سرعة تملك العقار والحلول التمويلية</h3>
+  <p><strong>إجمالي التمويل:</strong> ${totalInst.toFixed(0)} ريال</p>
+  <h3>📞 للتواصل مع سرعة تملك العقار</h3>
   <p>0506214458 – hlooleqrr.com</p>
   `;
   document.getElementById('question').innerHTML = html;
 }
 </script>
+
 <footer>
   <p>جميع الحقوق محفوظة - سرعة تملك العقار والحلول التمويلية - <span id="datetime"></span></p>
 </footer>

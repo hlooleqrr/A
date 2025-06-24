@@ -18,23 +18,23 @@
       font-size: 32px;
     }
     .container {
-      max-width: 650px;
+      max-width: 700px;
       margin: 25px auto;
       background: #fff;
-      padding: 25px;
+      padding: 30px;
       border-radius: 10px;
       box-shadow: 0 0 15px rgba(0,0,0,.1);
     }
     input, select, button {
-      width: 92%;
-      padding: 20px;
-      margin: 18px 0;
-      font-size: 30px;
-      border-radius: 5px;
+      width: 95%;
+      padding: 24px;
+      margin: 22px 0;
+      font-size: 32px;
+      border-radius: 8px;
       border: 1px solid #ccc;
     }
     select {
-      height: 75px;
+      height: 85px;
     }
     button {
       background: #00796b;
@@ -46,9 +46,9 @@
       background: #004d40;
     }
     .small-reset {
-      font-size: 26px;
-      padding: 12px 20px;
-      margin-top: 22px;
+      font-size: 28px;
+      padding: 14px 22px;
+      margin-top: 24px;
       background: #e3f2fd;
       color: #1565c0;
       border: none;
@@ -74,6 +74,10 @@
         opacity: 1;
         transform: translateY(0);
       }
+    }
+    h2, h3, p {
+      margin: 14px 0;
+      line-height: 1.6;
     }
   </style>
 </head>
@@ -259,6 +263,8 @@ function calculate(){
   `;
   document.getElementById('question').innerHTML = html;
 }
+</script>
+<script>
 function updateDateTime(){
   const n = new Date();
   document.getElementById('datetime').innerText =

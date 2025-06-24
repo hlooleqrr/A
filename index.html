@@ -223,22 +223,14 @@ function calculate(){
     let balloonExtra = balloonPhases.reduce((sum, b) => (m >= b.start && m < b.end) ? sum + b.value : sum, 0);
     let available = allowedInst - activeCommits - balloonExtra;
     if(financeType==='تمويل شخصي') available = Math.min(available, salary * 0.3333);
-    if (available < 0) {
-      document.getElementById('question').innerHTML = `
-      <div class="result fade-in">
-        <h2>نعتذر، لا يمكننا تمويلك</h2>
-        <p>القسط المطلوب يتجاوز الحد المسموح به بناءً على راتبك أو التزاماتك الحالية.</p>
-      </div>`; return;
-    }
     futurePhases.push({ month: m, inst: available });
   }
   let finalPhases = [];
   for (let i = 0; i < futurePhases.length; i++) {
-    const curr = futurePhases[i], prev = futurePhases[i - 1];
-    if (i === 0 || curr.inst !== prev.inst) {
-      finalPhases.push({ from: curr.month, to: curr.month, inst: curr.inst });
+    if (i === 0 || futurePhases[i].inst !== futurePhases[i-1].inst) {
+      finalPhases.push({ from: futurePhases[i].month, to: futurePhases[i].month, inst: futurePhases[i].inst });
     } else {
-      finalPhases[finalPhases.length - 1].to = curr.month;
+      finalPhases[finalPhases.length - 1].to = futurePhases[i].month;
     }
   }
   const totalInst = finalPhases.reduce((s,p)=>s + p.inst * (p.to - p.from + 1), 0);
@@ -262,11 +254,8 @@ function calculate(){
   }
   let html = '<div class="result"><h2>نتيجة الحاسبة:</h2>';
   finalPhases.forEach(p=>{
-    if (p.from === p.to) {
-      html += `<p><strong>القسط في الشهر ${p.from}:</strong> ${p.inst.toFixed(0)} ريال</p>`;
-    } else {
-      html += `<p><strong>القسط من الشهر ${p.from} إلى ${p.to}:</strong> ${p.inst.toFixed(0)} ريال</p>`;
-    }
+    const isSame = p.from === p.to;
+    html += `<p><strong>القسط من الشهر ${p.from} إلى ${isSame ? p.to : p.to}:</strong> ${p.inst.toFixed(0)} ريال</p>`;
   });
   html += `
   <p class="highlight">التمويل الصافي بعد خصم الرسوم النهائي: ${finalNet.toFixed(0)} ريال</p>

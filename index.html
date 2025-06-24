@@ -233,6 +233,19 @@ function calculate(){
       finalPhases[finalPhases.length - 1].to = futurePhases[i].month;
     }
   }
+
+  // ✅ التعديل المطلوب: إذا فيه قسط سالب، إظهار رسالة اعتذار
+  const hasNegative = finalPhases.some(p => p.inst < 0);
+  if (hasNegative) {
+    document.getElementById('question').innerHTML = `
+      <div class="result">
+        <h2>نعتذر، لا يمكن تنفيذ التمويل بناءً على المعلومات المدخلة.</h2>
+        <p>يرجى التحقق من الالتزامات والدخل الشهري.</p>
+      </div>
+    `;
+    return;
+  }
+
   const totalInst = finalPhases.reduce((s,p)=>s + p.inst * (p.to - p.from + 1), 0);
   const profitFactor = (years * profitMargin / 100) + 1;
   const netFinance = totalInst / profitFactor;

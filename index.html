@@ -113,9 +113,9 @@ const generalQuestions = [
   { id:'financeType',label:'نوع التمويل',type:'select',options:['تمويل عقاري','تمويل شخصي'] },
   { id:'supported',label:'هل التمويل مدعوم؟',type:'select',options:['مدعوم','غير مدعوم'],show:a=>a.financeType==='تمويل عقاري' },
   { id:'bundle',label:'هل ترغب في دفعة مقدمة من سكني؟',type:'select',options:['نعم','لا'],show:a=>a.supported==='مدعوم' },
-  { id:'salary',label:'كم الراتب الشهري؟',type:'number' },
-  { id:'months',label:'عدد الأشهر للتمويل',type:'select',options:Array.from({length:349},(_,i)=>(i+12)+' شهر'),show:a=>a.financeType==='تمويل عقاري' },
-  { id:'months',label:'عدد الأشهر للتمويل',type:'select',options:Array.from({length:49},(_,i)=>(i+12)+' شهر'),show:a=>a.financeType==='تمويل شخصي' },
+  { id:'salary',label:'كم الراتب الشهري الصافي؟',type:'number' },
+  { id:'months',label:'على كم شهر تريد التمويل',type:'select',options:Array.from({length:349},(_,i)=>(i+12)+' شهر'),show:a=>a.financeType==='تمويل عقاري' },
+  { id:'months',label:'على كم شهر تريد التمويل',type:'select',options:Array.from({length:49},(_,i)=>(i+12)+' شهر'),show:a=>a.financeType==='تمويل شخصي' },
   { id:'profitMargin',label:'نسبة هامش الربح السنوي (%)؟',type:'number' },
   { id:'hasCommitments',label:'هل لديك التزامات؟',type:'select',options:['نعم','لا'] }
 ];
@@ -123,7 +123,7 @@ const commitmentQuestions = [
   { id:'type',label:'نوع الالتزام',type:'select',options:['قرض شخصي','قرض سيارة','قرض استهلاكي'] },
   { id:'amount',label:'كم القسط الشهري؟',type:'number' },
   { id:'months',label:'كم عدد الأشهر المتبقية؟',type:'select',options:Array.from({length:60},(_,i)=>(i+1)+' شهر') },
-  { id:'balloon',label:'هل لديك دفعة أخيرة؟',type:'select',options:['نعم','لا'],show:c=>c.type==='قرض سيارة' },
+  { id:'balloon',label:'هل يوجد دفعةأخيرة(لسيارة)؟',type:'select',options:['نعم','لا'],show:c=>c.type==='قرض سيارة' },
   { id:'balloonAmount',label:'كم مبلغ الدفعة الأخيرة؟',type:'number',show:c=>c.balloon==='نعم' },
   { id:'more',label:'هل لديك التزامات أخرى؟',type:'select',options:['نعم','لا'] }
 ];
@@ -267,8 +267,8 @@ function calculate(){
   <p><strong>ضريبة الرسوم:</strong> ${vat.toFixed(0)} ريال</p>
   ${addCommodityFee ? `<p><strong>رسوم السلع:</strong> ${commodityFee.toFixed(0)} ريال</p>` : ''}
   <p><strong>إجمالي التمويل مع الأرباح:</strong> ${totalInst.toFixed(0)} ريال</p>
-  <h3 style="margin-top:20px;">📞 للتواصل مع سرعة تملك العقار والحلول التمويلية</h3>
-  <p>0506214458 – hlooleqrr.com</p></div>
+  <h3 style="margin-top:33px;">📞 خذ لقطة لشاشة وتواصل  معنا سرعة تملك العقار والحلول التمويلية</h3>
+  <p>0506214458 –  اوزورونا على موقعhlooleqrr.com</p></div>
   `;
   document.getElementById('question').innerHTML = html;
 }

@@ -161,10 +161,13 @@ function calculate(){
     if(period>0){
       const active = commits.slice(i).reduce((s,c)=>{
         let balloon = 0;
-        if(c.type==='قرض سيارة' && c.balloon==='نعم' && c.balloonAmount){
-          const distributeMonths = Math.min(24, parseInt(c.months));
-          balloon = c.balloonAmount / distributeMonths;
-        }
+        if(c.type==='if(c.type==='قرض سيارة' && c.balloon==='نعم' && c.balloonAmount){
+  const balloonStartMonth = curMonth + parseInt(c.months); // تبدأ بعد انتهاء قسط السيارة
+  const balloonMonths = Math.min(24, months - balloonStartMonth);
+  if(curMonth >= balloonStartMonth && balloonMonths > 0){
+    balloon = c.balloonAmount / balloonMonths;
+  }
+}
         return s + (c.amount || 0) + balloon;
       }, 0);
       const avail = allowedInst - active;

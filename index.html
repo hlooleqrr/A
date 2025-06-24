@@ -198,15 +198,6 @@ function calculate(){
   let supportText = '';
   if(financeType === 'تمويل عقاري' && supported === 'مدعوم'){
     if(bundle === 'نعم'){
-      const sup = salary < 10000 ? 150000 : 100000;
-      supportText = `<p><strong>دعم حكومي مضاف:</strong> ${sup.toLocaleString()} ريال</p>`;
-    }else{
-      const sup = salary < 10000 ? 150000 : 100000,
-            dist = Math.min(months, 240),
-            monthly = Math.round(sup / dist);
-      supportText = `<p><strong>تم توزيع دعم الدفعة المقدمة (${sup.toLocaleString()} ريال) على ${dist} شهر = ${monthly.toLocaleString()} ريال لكل شهر</strong></p>`;
-    }
-  }
 
   let html = '<h2>نتيجة الحاسبة:</h2>';
   schedule.forEach((p,i)=>{
@@ -217,6 +208,16 @@ function calculate(){
   html += `
   <p><strong>التمويل الصافي بعد خصم الرسوم النهائي:</strong> ${finalNet.toFixed(0)} ريال</p>
   <p><strong>التمويل الصافي قبل خصم الرسوم:</strong> ${netFinance.toFixed(0)} ريال</p>
+        const sup = salary < 10000 ? 150000 : 100000;
+      supportText = `<p><strong>دعم حكومي مضاف:</strong> ${sup.toLocaleString()} ريال</p>`;
+    }else{
+      const sup = salary < 10000 ? 150000 : 100000,
+            dist = Math.min(months, 240),
+            monthly = Math.round(sup / dist);
+      supportText = `<p><strong>تم توزيع دعم الدفعة المقدمة (${sup.toLocaleString()} ريال) على ${dist} شهر = ${monthly.toLocaleString()} ريال لكل شهر</strong></p>`;
+    }
+  }
+
     <p><strong>الربح دون الرسوم:</strong> ${(totalInst - netFinance).toFixed(0)} ريال</p>
       <p><strong>الربح مع الرسوم:</strong> ${totalProfitWithFees.toFixed(0)} ريال</p>
           <p><strong>معامل الربح:</strong> ${profitFactor.toFixed(3)}</p>

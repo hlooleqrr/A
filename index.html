@@ -37,9 +37,7 @@
 
 <script>
 let answers = { commitments: [] }, step = 0, commitmentStep = 0, currentCommitment = {};
-let hasStarted = false;
-
-const generalQuestions = [
+let hasStarted = false;const generalQuestions = [
   { id:'financeType',label:'نوع التمويل',type:'select',options:['تمويل عقاري','تمويل شخصي'] },
   { id:'supported',label:'هل التمويل مدعوم؟',type:'select',options:['مدعوم','غير مدعوم'],show:a=>a.financeType==='تمويل عقاري' },
   { id:'bundle',label:'هل ترغب في دفعة مقدمة من سكني؟',type:'select',options:['نعم','لا'],show:a=>a.supported==='مدعوم' },
@@ -78,9 +76,7 @@ function resetCalc(){
   document.getElementById('mainButton').style.display = 'none';
   document.getElementById('resetButtonContainer').style.display = 'block';
   showQuestion();
-}
-
-function showQuestion(){
+}function showQuestion(){
   const cont = document.getElementById('question');
   cont.innerHTML = '';
   document.getElementById('nextContainer').style.display = 'block';
@@ -173,7 +169,17 @@ function calculate(){
     }
   }
 
-  const totalInst = schedule.reduce((s,p)=>s + p.inst * p.months, 0);
+  const allZero = schedule.every(p => p.inst === 0);
+  const anyNegative = schedule.some(p => p.inst < 0);
+
+  if (anyNegative || allZero) {
+    document.getElementById('question').innerHTML = `
+      <h2>عذرًا، لا يمكن الحصول على التمويل</h2>
+      <p>بسبب أن الالتزامات الحالية تتجاوز نسبة الاستقطاع المسموح بها (${deductionRate}%)</p>
+      <p>يرجى تقليل الالتزامات أو مراجعة البنك لمعرفة خيارات الدعم المتاحة.</p>
+    `;
+    return;
+  }  const totalInst = schedule.reduce((s,p)=>s + p.inst * p.months, 0);
   const profitFactor = (years * profitMargin / 100) + 1;
   const netFinance = totalInst / profitFactor;
 
@@ -218,9 +224,7 @@ function calculate(){
   `;
   document.getElementById('question').innerHTML = html;
 }
-</script>
 
-<script>
 function updateDateTime(){
   const n = new Date();
   document.getElementById('datetime').innerText =

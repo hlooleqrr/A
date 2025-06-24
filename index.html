@@ -140,19 +140,20 @@ function calculate(){
         profitMargin = parseFloat(answers.profitMargin),
         { financeType, supported, bundle } = answers;
 
-  let deductionRate = 0, extraSupport = 0, addCommodityFee = false;
+  let deductionRate = 0, addCommodityFee = false;
   if(financeType === 'تمويل شخصي'){
     if(months > 60){ alert('مدة التمويل الشخصي لا تتجاوز 60 شهر'); return; }
     deductionRate = 33.33;
     addCommodityFee = true;
   }else{
     if(supported === 'مدعوم'){
-      if(bundle === 'لا'){ deductionRate = 65; extraSupport = salary < 10000 ? 150000 : 100000; }
+      if(bundle === 'لا'){ deductionRate = 65; }
       else{ deductionRate = salary < 15000 ? 55 : 65; }
     }else{ deductionRate = salary < 15000 ? 55 : 65; }
   }
 
   let allowedInst = salary * deductionRate / 100;
+  let balloonPeriods = [];
   let commits = [...answers.commitments].sort((a,b)=>parseInt(a.months)-parseInt(b.months));
   let schedule = [], curMonth = 0;
 
@@ -164,10 +165,10 @@ function calculate(){
       const active = commits.slice(i).reduce((s,c)=>{
         let balloon = 0;
         if(c.type==='قرض سيارة' && c.balloon==='نعم' && c.balloonAmount){
-          const distributeStart = parseInt(c.months);
-          const distributeEnd = distributeStart + 24;
-          if(curMonth >= distributeStart && curMonth < distributeEnd){
-            balloon = c.balloonAmount / 24;
+          const balloonStart = parseInt(c.months);
+          const balloonEnd = Math.min(balloonStart + 24, months);
+          if(curMonth >= balloonStart && curMonth < balloonEnd){
+            balloon = c.balloonAmount / (balloonEnd - balloonStart);
           }
         }
         return s + (c.amount || 0) + balloon;
@@ -179,16 +180,19 @@ function calculate(){
     }
   }
 
-  const allZero = schedule.every(p => p.inst === 0);
-  const anyNegative = schedule.some(p => p.inst < 0);
-
-  if (anyNegative || allZero) {
-    document.getElementById('question').innerHTML = `
-      <h2>عذرًا، لا يمكن الحصول على التمويل</h2>
-      <p>بسبب أن الالتزامات الحالية تتجاوز نسبة الاستقطاع المسموح بها (${deductionRate}%)</p>
-      <p>يرجى تقليل الالتزامات أو مراجعة البنك لمعرفة خيارات الدعم المتاحة.</p>
-    `;
-    return;
+  const balloonOnlyPeriod = commits.some(c => c.type==='قرض سيارة' && c.balloon==='نعم' && c.balloonAmount);
+  if(balloonOnlyPeriod){
+    const allMonths = schedule.reduce((s,x)=>s+x.months,0);
+    for(const c of commits){
+      if(c.type==='قرض سيارة' && c.balloon==='نعم' && c.balloonAmount){
+        const start = parseInt(c.months);
+        const end = Math.min(start + 24, months);
+        if(end > start){
+          const perMonth = c.balloonAmount / (end - start);
+          schedule.push({months:end - start, inst: allowedInst - perMonth});
+        }
+      }
+    }
   }
 
   const totalInst = schedule.reduce((s,p)=>s + p.inst * p.months, 0);

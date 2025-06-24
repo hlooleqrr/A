@@ -156,26 +156,24 @@ function calculate(){
   let commits = [...answers.commitments].sort((a,b)=>parseInt(a.months)-parseInt(b.months));
   let schedule = [], curMonth = 0;
 
-  const balloonMap = {};
-  commits.forEach(c=>{
-    if(c.type==='قرض سيارة' && c.balloon==='نعم' && c.balloonAmount){
-      const start = parseInt(c.months);
-      const end = Math.min(start + 24, months);
-      const amountPerMonth = c.balloonAmount / (end - start);
-      for(let m=start; m<end; m++){
-        balloonMap[m] = (balloonMap[m] || 0) + amountPerMonth;
-      }
-    }
-  });
-
   for(let i=0;i<=commits.length;i++){
     const cut = i<commits.length?parseInt(commits[i].months):months,
           period = cut - curMonth;
 
     if(period>0){
-      const active = commits.slice(i).reduce((s,c)=>s + (c.amount || 0), 0);
-      const balloon = Array.from({length:period},(_,j)=>balloonMap[curMonth + j] || 0).reduce((a,b)=>a+b,0)/period;
-      const avail = allowedInst - active - balloon;
+      const active = commits.slice(i).reduce((s,c)=>{
+        let balloon = 0;
+        if(c.type==='قرض سيارة' && c.balloon==='نعم' && c.balloonAmount){
+          const distributeStart = parseInt(c.months);
+          const distributeEnd = distributeStart + 24;
+          if(curMonth >= distributeStart && curMonth < distributeEnd){
+            balloon = c.balloonAmount / 24;
+          }
+        }
+        return s + (c.amount || 0) + balloon;
+      }, 0);
+
+      const avail = allowedInst - active;
       schedule.push({months:period,inst:avail});
       curMonth = cut;
     }
@@ -222,7 +220,6 @@ function calculate(){
           to   = from + p.months - 1;
     html += `<p><strong>القسط من الشهر ${from} إلى ${to}:</strong> ${p.inst.toFixed(0)} ريال</p>`;
   });
-
   html += `
   <p><strong>التمويل الصافي بعد خصم الرسوم النهائي:</strong> ${finalNet.toFixed(0)} ريال</p>
   ${supportText}

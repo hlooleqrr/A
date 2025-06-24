@@ -5,20 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>حاسبة التمويل - سرعة تملك العقار</title>
   <style>
-    body {font-family:'Tajawal',sans-serif;background:#f4f6f8;margin:0;text-align:center}
-    header {background:#005c48;color:#fff;padding:20px}
-    .container {max-width:600px;margin:20px auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 0 15px rgba(0,0,0,.1)}
-    input, select, button {width:90%;padding:10px;margin:10px 0;font-size:16px;border-radius:5px;border:1px solid #ccc}
-    button {background:#00796b;color:#fff;border:none;cursor:pointer}
-    button:hover {background:#004d40}
-    .small-reset {font-size:13px;padding:6px 12px;margin-top:30px;background:#d6eafd;color:#004488;border:none;cursor:pointer;border-radius:20px}
-    .small-reset:hover {background:#b4daff}
-    footer {font-size:12px;color:#666;margin-top:40px;padding:10px}
-    .fade-in {opacity:0;transform:translateY(20px);animation:fadeInMove .6s forwards}
-    @keyframes fadeInMove {to {opacity:1;transform:translateY(0)}}
-    input[type=range]::-webkit-slider-thumb {
-      background:#00796b;width:18px;height:18px;border-radius:50%;cursor:pointer
-    }
+    body{font-family:'Tajawal',sans-serif;background:#f4f6f8;margin:0;text-align:center}
+    header{background:#005c48;color:#fff;padding:20px}
+    .container{max-width:600px;margin:20px auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 0 15px rgba(0,0,0,.1)}
+    input,select,button{width:90%;padding:10px;margin:10px 0;font-size:16px;border-radius:5px;border:1px solid #ccc}
+    button{background:#00796b;color:#fff;border:none;cursor:pointer}
+    button:hover{background:#004d40}
+    .small-reset{font-size:13px;padding:5px 10px;margin-top:20px;background:#e3f2fd;color:#1565c0;border:none;cursor:pointer;border-radius:15px}
+    .small-reset:hover{background:#bbdefb}
+    footer{font-size:12px;color:#666;margin-top:40px;padding:10px}
+    .fade-in{opacity:0;transform:translateY(20px);animation:fadeInMove .6s forwards}
+    @keyframes fadeInMove{to{opacity:1;transform:translateY(0)}}
   </style>
 </head>
 <body>
@@ -29,11 +26,9 @@
 
 <div class="container" id="form-container">
   <div id="question"></div>
+  <button id="mainButton" onclick="handleStartOrReset()">ابدأ الحسبة</button>
   <div id="nextContainer" style="display:none">
     <button onclick="nextQuestion()">التالي</button>
-  </div>
-  <div id="resetBtn" style="margin-top:10px">
-    <button class="small-reset" onclick="resetCalc()">🔁 إعادة الحسبة</button>
   </div>
 </div>
 
@@ -46,7 +41,8 @@ const generalQuestions = [
   { id:'supported',label:'هل التمويل مدعوم؟',type:'select',options:['مدعوم','غير مدعوم'],show:a=>a.financeType==='تمويل عقاري' },
   { id:'bundle',label:'هل ترغب في دفعة مقدمة من سكني؟',type:'select',options:['نعم','لا'],show:a=>a.supported==='مدعوم' },
   { id:'salary',label:'كم الراتب الشهري؟',type:'number' },
-  { id:'months',label:'عدد الأشهر للتمويل',type:'range',min:12,max:360,value:240 },
+  { id:'months',label:'عدد الأشهر للتمويل',type:'select',options:Array.from({length:349},(_,i)=>(i+12)+' شهر'),show:a=>a.financeType==='تمويل عقاري' },
+  { id:'months',label:'عدد الأشهر للتمويل',type:'select',options:Array.from({length:49},(_,i)=>(i+12)+' شهر'),show:a=>a.financeType==='تمويل شخصي' },
   { id:'profitMargin',label:'نسبة هامش الربح السنوي (%)؟',type:'number' },
   { id:'hasCommitments',label:'هل لديك التزامات؟',type:'select',options:['نعم','لا'] }
 ];
@@ -60,11 +56,22 @@ const commitmentQuestions = [
   { id:'more',label:'هل لديك التزامات أخرى؟',type:'select',options:['نعم','لا'] }
 ];
 
+function handleStartOrReset(){
+  if(!hasStarted){
+    hasStarted = true;
+    document.getElementById('mainButton').style.display = 'none';
+    showQuestion();
+  }else{
+    resetCalc();
+  }
+}
+
 function resetCalc(){
   answers = { commitments: [] };
   step = commitmentStep = 0;
   currentCommitment = {};
   hasStarted = true;
+  document.getElementById('mainButton').style.display = 'none';
   showQuestion();
 }
 
@@ -72,7 +79,6 @@ function showQuestion(){
   const cont = document.getElementById('question');
   cont.innerHTML = '';
   document.getElementById('nextContainer').style.display = 'block';
-
   let q;
   if(step < generalQuestions.length){
     q = generalQuestions[step];
@@ -84,15 +90,12 @@ function showQuestion(){
     document.getElementById('nextContainer').style.display = 'none';
     calculate(); return;
   }
-
   const div = document.createElement('div'); div.classList.add('fade-in');
   div.innerHTML = `<label>${q.label}</label><br>`;
   if(q.type==='select'){
     const sel = document.createElement('select'); sel.id = q.id;
     q.options.forEach(opt=>{ sel.innerHTML += `<option value="${opt}">${opt}</option>`; });
     div.appendChild(sel);
-  }else if(q.type==='range'){
-    div.innerHTML += `<input type="range" id="${q.id}" min="${q.min}" max="${q.max}" value="${q.value}" oninput="document.getElementById('${q.id}Val').textContent=this.value"><br><span id="${q.id}Val">${q.value}</span> شهر`;
   }else{
     div.innerHTML += `<input type="number" id="${q.id}">`;
   }
@@ -102,7 +105,6 @@ function showQuestion(){
 function nextQuestion(){
   const q = step < generalQuestions.length ? generalQuestions[step] : commitmentQuestions[commitmentStep];
   const val = document.getElementById(q.id)?.value;
-
   if(step < generalQuestions.length){
     answers[q.id] = val;
     step++;
@@ -203,13 +205,24 @@ function calculate(){
     ${supportText}
     <h3 style="margin-top:20px;">📞 للتواصل مع سرعة تملك العقار والحلول التمويلية</h3>
     <p>0506214458 – hlooleqrr.com</p>
+    <button class="small-reset" onclick="resetCalc()">🔁 إعادة الحسبة</button>
   `;
   document.getElementById('question').innerHTML = html;
 }
 </script>
 
+<script>
+function updateDateTime(){
+  const n = new Date();
+  document.getElementById('datetime').innerText =
+    `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')} `+
+    `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
+}
+setInterval(updateDateTime, 1000); updateDateTime();
+</script>
+
 <footer>
-  <p>جميع الحقوق محفوظة - سرعة تملك العقار والحلول التمويلية</p>
+  <p>جميع الحقوق محفوظة - سرعة تملك العقار والحلول التمويلية - <span id="datetime"></span></p>
 </footer>
 </body>
 </html>

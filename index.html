@@ -204,6 +204,7 @@ function calculate(){
   });
   html += `
     <p><strong>إجمالي التمويل مع الأرباح:</strong> ${totalInst.toFixed(0)} ريال</p>
+    <p><strong>الربح دون الرسوم:</strong> ${(totalInst - netFinance).toFixed(0)} ريال</p>
     <p><strong>معامل الربح:</strong> ${profitFactor.toFixed(3)}</p>
     <p><strong>التمويل الصافي قبل الرسوم:</strong> ${netFinance.toFixed(0)} ريال</p>
     <p><strong>الرسوم الإدارية:</strong> ${adminFee.toFixed(0)} ريال</p>

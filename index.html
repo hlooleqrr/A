@@ -55,7 +55,9 @@ const commitmentQuestions = [
   { id:'balloon',label:'هل لديك دفعة أخيرة؟',type:'select',options:['نعم','لا'],show:c=>c.type==='قرض سيارة' },
   { id:'balloonAmount',label:'كم مبلغ الدفعة الأخيرة؟',type:'number',show:c=>c.balloon==='نعم' },
   { id:'more',label:'هل لديك التزامات أخرى؟',type:'select',options:['نعم','لا'] }
-];function handleStartOrReset(){
+];
+
+function handleStartOrReset(){
   if(!hasStarted){
     hasStarted = true;
     document.getElementById('mainButton').style.display = 'none';
@@ -107,7 +109,7 @@ function nextQuestion(){
   if(!val){ alert('يرجى تعبئة الحقل قبل المتابعة'); return; }
 
   if(step < generalQuestions.length){
-    answers[q.id] = val;
+    answers[q.id] = val.replace(' شهر','');
     step++;
   }else{
     if(q.id==='months') currentCommitment[q.id] = parseInt(val);
@@ -123,7 +125,9 @@ function nextQuestion(){
     commitmentStep++;
   }
   showQuestion();
-}function calculate(){
+}
+
+function calculate(){
   const salary = parseFloat(answers.salary),
         months = parseInt(answers.months),
         years  = months / 12,
@@ -144,9 +148,7 @@ function nextQuestion(){
 
   let allowedInst = salary * deductionRate / 100;
   let commits = [...answers.commitments].sort((a,b)=>parseInt(a.months)-parseInt(b.months));
-  let schedule = [], curMonth = 0;
-
-  const balloonPhases = [];
+  let balloonPhases = [];
 
   commits.forEach((c) => {
     if (c.type === 'قرض سيارة' && c.balloon === 'نعم' && c.balloonAmount) {
@@ -156,27 +158,24 @@ function nextQuestion(){
     }
   });
 
-  for(let i=0;i<=commits.length;i++){
-    const cut = i<commits.length?parseInt(commits[i].months):months,
-          period = cut - curMonth;
+  let futurePhases = [];
+  for(let m = 1; m <= months; m++) {
+    let activeCommits = commits.filter(c => m <= parseInt(c.months)).reduce((sum, c) => sum + (c.amount || 0), 0);
+    let balloonExtra = balloonPhases.reduce((sum, b) => (m >= b.start && m < b.end) ? sum + b.value : sum, 0);
+    let available = allowedInst - activeCommits - balloonExtra;
+    futurePhases.push({ month: m, inst: available });
+  }
 
-    if(period>0){
-      const active = commits.slice(i).reduce((s,c)=>{
-        return s + (c.amount || 0);
-      }, 0);
-
-      const balloonAdd = balloonPhases.reduce((sum, b) => {
-        if(curMonth >= b.start && curMonth < b.end){ return sum + b.value; }
-        return sum;
-      }, 0);
-
-      const avail = allowedInst - active - balloonAdd;
-      schedule.push({months:period,inst:avail});
-      curMonth = cut;
+  let finalPhases = [];
+  for (let i = 0; i < futurePhases.length; i++) {
+    if (i === 0 || futurePhases[i].inst !== futurePhases[i-1].inst) {
+      finalPhases.push({ from: futurePhases[i].month, to: futurePhases[i].month, inst: futurePhases[i].inst });
+    } else {
+      finalPhases[finalPhases.length - 1].to = futurePhases[i].month;
     }
   }
 
-  const totalInst = schedule.reduce((s,p)=>s + p.inst * p.months, 0);
+  const totalInst = finalPhases.reduce((s,p)=>s + p.inst * (p.to - p.from + 1), 0);
   const profitFactor = (years * profitMargin / 100) + 1;
   const netFinance = totalInst / profitFactor;
 
@@ -200,10 +199,8 @@ function nextQuestion(){
   }
 
   let html = '<h2>نتيجة الحاسبة:</h2>';
-  schedule.forEach((p,i)=>{
-    const from = schedule.slice(0,i).reduce((s,x)=>s+x.months,0)+1,
-          to   = from + p.months - 1;
-    html += `<p><strong>القسط من الشهر ${from} إلى ${to}:</strong> ${p.inst.toFixed(0)} ريال</p>`;
+  finalPhases.forEach(p=>{
+    html += `<p><strong>القسط من الشهر ${p.from} إلى ${p.to}:</strong> ${p.inst.toFixed(0)} ريال</p>`;
   });
 
   html += `
@@ -221,7 +218,9 @@ function nextQuestion(){
   <p>0506214458 – hlooleqrr.com</p>
   `;
   document.getElementById('question').innerHTML = html;
-}</script>
+}
+</script>
+
 <footer>
   <p>جميع الحقوق محفوظة - سرعة تملك العقار والحلول التمويلية - <span id="datetime"></span></p>
 </footer>

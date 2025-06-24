@@ -9,13 +9,13 @@
       background: #f4f6f8;
       margin: 0;
       text-align: center;
-      font-size: 30px;
+      font-size: 32px;
     }
     header {
       background: #005c48;
       color: #fff;
       padding: 25px;
-      font-size: 32px;
+      font-size: 34px;
     }
     .container {
       max-width: 650px;
@@ -29,13 +29,13 @@
       width: 92%;
       padding: 20px;
       margin: 18px 0;
-      font-size: 30px;
+      font-size: 32px;
       border-radius: 5px;
       border: 1px solid #ccc;
       box-sizing: border-box;
     }
     select option {
-      font-size: 28px;
+      font-size: 30px;
     }
     button {
       background: #00796b;
@@ -47,7 +47,7 @@
       background: #004d40;
     }
     .small-reset {
-      font-size: 26px;
+      font-size: 28px;
       padding: 12px 20px;
       margin-top: 22px;
       background: #e3f2fd;
@@ -60,7 +60,7 @@
       background: #bbdefb;
     }
     footer {
-      font-size: 24px;
+      font-size: 26px;
       color: #666;
       margin-top: 40px;
       padding: 15px;
@@ -77,12 +77,17 @@
       }
     }
     .result p {
-      margin: 10px 0;
-      font-size: 28px;
-      line-height: 1.5;
+      margin: 12px 0;
+      font-size: 30px;
+      line-height: 1.6;
     }
     .result h2, .result h3 {
-      font-size: 32px;
+      font-size: 34px;
+    }
+    .highlight {
+      font-size: 36px;
+      font-weight: bold;
+      color: #004d40;
     }
   </style>
 </head>
@@ -238,14 +243,13 @@ function calculate(){
   const totalProfitWithFees = totalInst - finalNet;
   let supportText = '';
   if(financeType === 'تمويل عقاري' && supported === 'مدعوم'){
+    const sup = salary < 10000 ? 150000 : 100000;
     if(bundle === 'نعم'){
-      const sup = salary < 10000 ? 150000 : 100000;
-      supportText = `<p><strong>دعم حكومي مضاف:</strong> ${sup.toLocaleString()} ريال</p>`;
+      supportText = `<p class="highlight">دعم حكومي مضاف: ${sup.toLocaleString()} ريال</p>`;
     }else{
-      const sup = salary < 10000 ? 150000 : 100000,
-            dist = Math.min(months, 240),
+      const dist = Math.min(months, 240),
             monthly = Math.round(sup / dist);
-      supportText = `<p><strong>تم توزيع دعم الدفعة (${sup.toLocaleString()} ريال) على ${dist} شهر = ${monthly.toLocaleString()} ريال</strong></p>`;
+      supportText = `<p class="highlight">تم توزيع دعم الدفعة (${sup.toLocaleString()} ريال) على ${dist} شهر = ${monthly.toLocaleString()} ريال</p>`;
     }
   }
   let html = '<div class="result"><h2>نتيجة الحاسبة:</h2>';
@@ -253,7 +257,7 @@ function calculate(){
     html += `<p><strong>القسط من الشهر ${p.from} إلى ${p.to}:</strong> ${p.inst.toFixed(0)} ريال</p>`;
   });
   html += `
-  <p><strong>التمويل الصافي بعد خصم الرسوم النهائي:</strong> ${finalNet.toFixed(0)} ريال</p>
+  <p class="highlight">التمويل الصافي بعد خصم الرسوم النهائي: ${finalNet.toFixed(0)} ريال</p>
   ${supportText}
   <p><strong>التمويل الصافي قبل خصم الرسوم:</strong> ${netFinance.toFixed(0)} ريال</p>
   <p><strong>الربح دون الرسوم:</strong> ${(totalInst - netFinance).toFixed(0)} ريال</p>

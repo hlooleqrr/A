@@ -3,40 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <title>حاسبة التمويل</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: 'Tajawal', sans-serif;
       background: #f4f6f8;
       margin: 0;
       text-align: center;
-      font-size: 28px;
+      font-size: 30px;
     }
     header {
       background: #005c48;
       color: #fff;
-      padding: 30px 15px;
-      font-size: 30px;
+      padding: 25px;
+      font-size: 32px;
     }
     .container {
-      max-width: 700px;
-      margin: 20px auto;
+      max-width: 650px;
+      margin: 25px auto;
       background: #fff;
-      padding: 30px 15px;
+      padding: 25px;
       border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      box-shadow: 0 0 15px rgba(0,0,0,.1);
     }
     input, select, button {
-      width: 100%;
-      padding: 24px;
-      margin: 20px 0;
-      font-size: 32px;
-      border-radius: 10px;
+      width: 92%;
+      padding: 20px;
+      margin: 18px 0;
+      font-size: 30px;
+      border-radius: 5px;
       border: 1px solid #ccc;
       box-sizing: border-box;
     }
-    select {
-      height: 90px;
+    select option {
+      font-size: 28px;
     }
     button {
       background: #00796b;
@@ -49,26 +48,27 @@
     }
     .small-reset {
       font-size: 26px;
-      padding: 16px;
+      padding: 12px 20px;
+      margin-top: 22px;
       background: #e3f2fd;
       color: #1565c0;
       border: none;
       cursor: pointer;
-      border-radius: 12px;
+      border-radius: 15px;
     }
     .small-reset:hover {
       background: #bbdefb;
     }
     footer {
-      font-size: 18px;
+      font-size: 24px;
       color: #666;
       margin-top: 40px;
-      padding: 10px;
+      padding: 15px;
     }
     .fade-in {
       opacity: 0;
       transform: translateY(20px);
-      animation: fadeInMove .5s forwards;
+      animation: fadeInMove .6s forwards;
     }
     @keyframes fadeInMove {
       to {
@@ -76,10 +76,13 @@
         transform: translateY(0);
       }
     }
-    h2, h3, p {
-      margin: 12px 0;
-      line-height: 1.5;
+    .result p {
+      margin: 10px 0;
       font-size: 28px;
+      line-height: 1.5;
+    }
+    .result h2, .result h3 {
+      font-size: 32px;
     }
   </style>
 </head>
@@ -245,7 +248,7 @@ function calculate(){
       supportText = `<p><strong>تم توزيع دعم الدفعة (${sup.toLocaleString()} ريال) على ${dist} شهر = ${monthly.toLocaleString()} ريال</strong></p>`;
     }
   }
-  let html = '<h2>نتيجة الحاسبة:</h2>';
+  let html = '<div class="result"><h2>نتيجة الحاسبة:</h2>';
   finalPhases.forEach(p=>{
     html += `<p><strong>القسط من الشهر ${p.from} إلى ${p.to}:</strong> ${p.inst.toFixed(0)} ريال</p>`;
   });
@@ -261,16 +264,10 @@ function calculate(){
   ${addCommodityFee ? `<p><strong>رسوم السلع:</strong> ${commodityFee.toFixed(0)} ريال</p>` : ''}
   <p><strong>إجمالي التمويل مع الأرباح:</strong> ${totalInst.toFixed(0)} ريال</p>
   <h3 style="margin-top:20px;">📞 للتواصل مع سرعة تملك العقار والحلول التمويلية</h3>
-  <p>0506214458 – hlooleqrr.com</p>
-  <button class="small-reset" onclick="resetCalc()">🔁 إعادة الحسبة</button>
+  <p>0506214458 – hlooleqrr.com</p></div>
   `;
   document.getElementById('question').innerHTML = html;
 }
-</script>
-<footer>
-  <p>جميع الحقوق محفوظة - سرعة تملك العقار والحلول التمويلية - <span id="datetime"></span></p>
-</footer>
-<script>
 function updateDateTime(){
   const n = new Date();
   document.getElementById('datetime').innerText =
@@ -279,5 +276,8 @@ function updateDateTime(){
 }
 setInterval(updateDateTime, 1000); updateDateTime();
 </script>
+<footer>
+  <p>جميع الحقوق محفوظة - سرعة تملك العقار والحلول التمويلية - <span id="datetime"></span></p>
+</footer>
 </body>
 </html>

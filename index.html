@@ -4,21 +4,91 @@
   <meta charset="UTF-8" />
   <title>حاسبة التمويل</title>
   <style>
-    body { font-family: 'Tajawal', sans-serif; background: #f4f6f8; margin: 0; text-align: center; font-size: 32px; }
-    header { background: #005c48; color: #fff; padding: 25px; font-size: 34px; }
-    .container { max-width: 650px; margin: 25px auto; background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,.1); }
-    input, select, button { width: 92%; padding: 20px; margin: 18px 0; font-size: 32px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
-    select option { font-size: 30px; }
-    button { background: #00796b; color: #fff; border: none; cursor: pointer; }
-    button:hover { background: #004d40; }
-    .small-reset { font-size: 28px; padding: 12px 20px; margin-top: 22px; background: #e3f2fd; color: #1565c0; border: none; cursor: pointer; border-radius: 15px; }
-    .small-reset:hover { background: #bbdefb; }
-    footer { font-size: 26px; color: #666; margin-top: 40px; padding: 15px; }
-    .fade-in { opacity: 0; transform: translateY(20px); animation: fadeInMove .6s forwards; }
-    @keyframes fadeInMove { to { opacity: 1; transform: translateY(0); } }
-    .result p { margin: 12px 0; font-size: 30px; line-height: 1.6; }
-    .result h2, .result h3 { font-size: 34px; }
-    .highlight { font-size: 36px; font-weight: bold; color: #004d40; }
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      text-align: center;
+      font-size: 32px;
+    }
+    header {
+      background: #005c48;
+      color: #fff;
+      padding: 25px;
+      font-size: 34px;
+    }
+    .container {
+      max-width: 650px;
+      margin: 25px auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,.1);
+    }
+    input, select, button {
+      width: 92%;
+      padding: 20px;
+      margin: 18px 0;
+      font-size: 32px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    select option {
+      font-size: 30px;
+    }
+    button {
+      background: #00796b;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #004d40;
+    }
+    .small-reset {
+      font-size: 28px;
+      padding: 12px 20px;
+      margin-top: 22px;
+      background: #e3f2fd;
+      color: #1565c0;
+      border: none;
+      cursor: pointer;
+      border-radius: 15px;
+    }
+    .small-reset:hover {
+      background: #bbdefb;
+    }
+    footer {
+      font-size: 26px;
+      color: #666;
+      margin-top: 40px;
+      padding: 15px;
+    }
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInMove .6s forwards;
+    }
+    @keyframes fadeInMove {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .result p {
+      margin: 12px 0;
+      font-size: 30px;
+      line-height: 1.6;
+    }
+    .result h2, .result h3 {
+      font-size: 34px;
+    }
+    .highlight {
+      font-size: 36px;
+      font-weight: bold;
+      color: #004d40;
+    }
   </style>
 </head>
 <body>
@@ -137,30 +207,38 @@ function calculate(){
       else{ deductionRate = salary < 15000 ? 55 : 65; }
     }else{ deductionRate = salary < 15000 ? 55 : 65; }
   }
-  const maxInstallment = salary * deductionRate / 100;
+  let allowedInst = salary * deductionRate / 100;
   let commits = [...answers.commitments].sort((a,b)=>parseInt(a.months)-parseInt(b.months));
   let balloonPhases = [];
-  commits.forEach(c=>{
-    if(c.type==='قرض سيارة' && c.balloon==='نعم' && c.balloonAmount){
-      const start = parseInt(c.months), end = start + 24;
+  commits.forEach((c) => {
+    if (c.type === 'قرض سيارة' && c.balloon === 'نعم' && c.balloonAmount) {
+      const start = parseInt(c.months);
+      const end = start + 24;
       balloonPhases.push({ start, end, value: c.balloonAmount / 24 });
     }
   });
   let futurePhases = [];
-  for(let m=1; m<=months; m++){
-    let activeCommits = commits.filter(c => m <= parseInt(c.months)).reduce((sum,c)=>sum+(c.amount||0),0);
-    let balloonExtra = balloonPhases.reduce((sum,b)=>(m>=b.start&&m<b.end)?sum+b.value:sum,0);
-    let available = maxInstallment - activeCommits - balloonExtra;
+  for(let m = 1; m <= months; m++) {
+    let activeCommits = commits.filter(c => m <= parseInt(c.months)).reduce((sum, c) => sum + (c.amount || 0), 0);
+    let balloonExtra = balloonPhases.reduce((sum, b) => (m >= b.start && m < b.end) ? sum + b.value : sum, 0);
+    let available = allowedInst - activeCommits - balloonExtra;
     if(financeType==='تمويل شخصي') available = Math.min(available, salary * 0.3333);
-    if(available < 0){ document.getElementById('question').innerHTML = '<p class="highlight">❌ نعتذر، لا يمكننا تمويلك لأن القسط تجاوز الحد المسموح</p>'; return; }
+    if (available < 0) {
+      document.getElementById('question').innerHTML = `
+      <div class="result fade-in">
+        <h2>نعتذر، لا يمكننا تمويلك</h2>
+        <p>القسط المطلوب يتجاوز الحد المسموح به بناءً على راتبك أو التزاماتك الحالية.</p>
+      </div>`; return;
+    }
     futurePhases.push({ month: m, inst: available });
   }
   let finalPhases = [];
-  for(let i=0; i<futurePhases.length; i++){
-    if(i===0 || futurePhases[i].inst !== futurePhases[i-1].inst){
-      finalPhases.push({ from: futurePhases[i].month, to: futurePhases[i].month, inst: futurePhases[i].inst });
-    }else{
-      finalPhases[finalPhases.length - 1].to = futurePhases[i].month;
+  for (let i = 0; i < futurePhases.length; i++) {
+    const curr = futurePhases[i], prev = futurePhases[i - 1];
+    if (i === 0 || curr.inst !== prev.inst) {
+      finalPhases.push({ from: curr.month, to: curr.month, inst: curr.inst });
+    } else {
+      finalPhases[finalPhases.length - 1].to = curr.month;
     }
   }
   const totalInst = finalPhases.reduce((s,p)=>s + p.inst * (p.to - p.from + 1), 0);
@@ -184,9 +262,9 @@ function calculate(){
   }
   let html = '<div class="result"><h2>نتيجة الحاسبة:</h2>';
   finalPhases.forEach(p=>{
-    if(p.from === p.to){
+    if (p.from === p.to) {
       html += `<p><strong>القسط في الشهر ${p.from}:</strong> ${p.inst.toFixed(0)} ريال</p>`;
-    }else{
+    } else {
       html += `<p><strong>القسط من الشهر ${p.from} إلى ${p.to}:</strong> ${p.inst.toFixed(0)} ريال</p>`;
     }
   });

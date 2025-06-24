@@ -100,7 +100,10 @@ function showQuestion(){
     div.innerHTML += `<input type="number" id="${q.id}">`;
   }
   cont.appendChild(div);
-}<script>
+}
+
+
+<script>
 function handleStartOrReset(){
   if(!hasStarted){
     hasStarted = true;
@@ -148,7 +151,10 @@ function showQuestion(){
   }
   cont.appendChild(div);
 }
-</script><script>
+</script>
+
+
+<script>
 function nextQuestion(){
   const q = step < generalQuestions.length ? generalQuestions[step] : commitmentQuestions[commitmentStep];
   const val = document.getElementById(q.id)?.value;
@@ -171,7 +177,10 @@ function nextQuestion(){
   }
   showQuestion();
 }
-</script><script>
+</script>
+
+
+<script>
 function calculate(){
   const salary = parseFloat(answers.salary),
         months = parseInt(answers.months),
@@ -257,7 +266,10 @@ function calculate(){
   `;
   document.getElementById('question').innerHTML = html;
 }
-</script><script>
+</script>
+
+
+<script>
 function updateDateTime(){
   const n = new Date();
   document.getElementById('datetime').innerText =
@@ -272,3 +284,4 @@ setInterval(updateDateTime, 1000); updateDateTime();
 </footer>
 </body>
 </html>
+

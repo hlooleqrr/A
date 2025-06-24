@@ -31,6 +31,7 @@
     <button onclick="nextQuestion()">التالي</button>
   </div>
 </div>
+
 <script>
 let answers = { commitments: [] }, step = 0, commitmentStep = 0, currentCommitment = {};
 let hasStarted = false;
@@ -101,57 +102,6 @@ function showQuestion(){
   }
   cont.appendChild(div);
 }
-
-
-    hasStarted = true;
-    document.getElementById('mainButton').textContent = '🔁 إعادة الحسبة';
-    showQuestion();
-  }else{
-    resetCalc();
-  }
-}
-function resetCalc(){
-  answers = { commitments: [] };
-  step = commitmentStep = 0;
-  currentCommitment = {};
-  hasStarted = true;
-  document.getElementById('mainButton').textContent = '🔁 إعادة الحسبة';
-  showQuestion();
-}
-function showQuestion(){
-  const cont = document.getElementById('question');
-  cont.innerHTML = '';
-  document.getElementById('nextContainer').style.display = 'block';
-  let q;
-  if(step < generalQuestions.length){
-    q = generalQuestions[step];
-    if(q.show && !q.show(answers)){ step++; showQuestion(); return; }
-  }else if(answers.hasCommitments === 'نعم'){
-    q = commitmentQuestions[commitmentStep];
-    if(q.show && !q.show(currentCommitment)){ commitmentStep++; showQuestion(); return; }
-  }else{
-    document.getElementById('nextContainer').style.display = 'none';
-    calculate(); return;
-  }
-  const div = document.createElement('div'); div.classList.add('fade-in');
-  div.innerHTML = `<label>${q.label}</label><br>`;
-  if(q.type==='select'){
-    const sel = document.createElement('select'); sel.id = q.id;
-    q.options.forEach(opt=>{ sel.innerHTML += `<option value="${opt}">${opt}</option>`; });
-    div.appendChild(sel);
-  }else if(q.type==='range'){
-    div.innerHTML += `<input type="range" id="${q.id}" min="${q.min}" max="${q.max}" value="${q.value}"
-                       oninput="document.getElementById('${q.id}Val').textContent=this.value">
-                      <br><span id="${q.id}Val">${q.value}</span> شهر`;
-  }else{
-    div.innerHTML += `<input type="number" id="${q.id}">`;
-  }
-  cont.appendChild(div);
-}
-</script>
-
-
-<script>
 function nextQuestion(){
   const q = step < generalQuestions.length ? generalQuestions[step] : commitmentQuestions[commitmentStep];
   const val = document.getElementById(q.id)?.value;
@@ -174,10 +124,6 @@ function nextQuestion(){
   }
   showQuestion();
 }
-</script>
-
-
-<script>
 function calculate(){
   const salary = parseFloat(answers.salary),
         months = parseInt(answers.months),
@@ -255,7 +201,7 @@ function calculate(){
     <p><strong>ضريبة الرسوم:</strong> ${vat.toFixed(0)} ريال</p>
     ${addCommodityFee ? `<p><strong>رسوم السلع:</strong> ${commodityFee.toFixed(0)} ريال</p>` : ''}
     <p><strong>التمويل الصافي النهائي:</strong> ${finalNet.toFixed(0)} ريال</p>
-    <p><strong>الربح مع الرسوم:</strong> ${totalProfitWithFees.toFixed(0)} ريال (الربح + الرسوم الإدارية + ضريبة الرسوم${addCommodityFee ? ' + رسوم السلع' : ''})</p>
+    <p><strong>الربح مع الرسوم:</strong> ${totalProfitWithFees.toFixed(0)} ريال</p>
     ${supportText}
     <h3 style="margin-top:20px;">📞 للتواصل مع سرعة تملك العقار والحلول التمويلية</h3>
     <p>0506214458 – hlooleqrr.com</p>
@@ -263,10 +209,6 @@ function calculate(){
   `;
   document.getElementById('question').innerHTML = html;
 }
-</script>
-
-
-<script>
 function updateDateTime(){
   const n = new Date();
   document.getElementById('datetime').innerText =
@@ -281,4 +223,3 @@ setInterval(updateDateTime, 1000); updateDateTime();
 </footer>
 </body>
 </html>
-

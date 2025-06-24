@@ -140,14 +140,14 @@ function calculate(){
         profitMargin = parseFloat(answers.profitMargin),
         { financeType, supported, bundle } = answers;
 
-  let deductionRate = 0, extraSupport = 0, addCommodityFee = false;
+  let deductionRate = 0, addCommodityFee = false;
   if(financeType === 'تمويل شخصي'){
     if(months > 60){ alert('مدة التمويل الشخصي لا تتجاوز 60 شهر'); return; }
     deductionRate = 33.33;
     addCommodityFee = true;
   }else{
     if(supported === 'مدعوم'){
-      if(bundle === 'لا'){ deductionRate = 65; extraSupport = salary < 10000 ? 150000 : 100000; }
+      if(bundle === 'لا'){ deductionRate = 65; }
       else{ deductionRate = salary < 15000 ? 55 : 65; }
     }else{ deductionRate = salary < 15000 ? 55 : 65; }
   }
@@ -162,13 +162,12 @@ function calculate(){
       const active = commits.slice(i).reduce((s,c)=>{
         let balloon = 0;
         if(c.type==='قرض سيارة' && c.balloon==='نعم' && c.balloonAmount){
-          const balloonStart = parseInt(c.months);
-          const balloonStartMonth = curMonth + balloonStart;
-          const monthsRemaining = months - curMonth;
-          const monthsAfterBalloon = months - balloonStartMonth;
-          const balloonMonths = Math.min(24, monthsAfterBalloon);
-          if(curMonth >= balloonStartMonth && balloonMonths > 0){
-            balloon = c.balloonAmount / balloonMonths;
+          const start = parseInt(c.months);
+          const balloonStart = start;
+          const balloonEnd = Math.min(balloonStart + 24, months);
+          if(curMonth >= balloonStart && curMonth < balloonEnd){
+            const distributeMonths = balloonEnd - balloonStart;
+            balloon = c.balloonAmount / distributeMonths;
           }
         }
         return s + (c.amount || 0) + balloon;
@@ -177,18 +176,6 @@ function calculate(){
       schedule.push({months:period,inst:avail});
       curMonth = cut;
     }
-  }
-
-  const allZero = schedule.every(p => p.inst === 0);
-  const anyNegative = schedule.some(p => p.inst < 0);
-
-  if (anyNegative || allZero) {
-    document.getElementById('question').innerHTML = `
-      <h2>عذرًا، لا يمكن الحصول على التمويل</h2>
-      <p>بسبب أن الالتزامات الحالية تتجاوز نسبة الاستقطاع المسموح بها (${deductionRate}%)</p>
-      <p>يرجى تقليل الالتزامات أو مراجعة البنك لمعرفة خيارات الدعم المتاحة.</p>
-    `;
-    return;
   }
 
   const totalInst = schedule.reduce((s,p)=>s + p.inst * p.months, 0);
@@ -201,23 +188,10 @@ function calculate(){
   const finalNet = netFinance - (adminFee + vat + commodityFee);
   const totalProfitWithFees = totalInst - finalNet;
 
-  let supportText = '';
-  if(financeType === 'تمويل عقاري' && supported === 'مدعوم'){
-    if(bundle === 'نعم'){
-      const sup = salary < 10000 ? 150000 : 100000;
-      supportText = `<p><strong>دعم حكومي مضاف:</strong> ${sup.toLocaleString()} ريال</p>`;
-    }else{
-      const sup = salary < 10000 ? 150000 : 100000,
-            dist = Math.min(months, 240),
-            monthly = Math.round(sup / dist);
-      supportText = `<p><strong>تم توزيع دعم الدفعة المقدمة (${sup.toLocaleString()} ريال) على ${dist} شهر = ${monthly.toLocaleString()} ريال لكل شهر</strong></p>`;
-    }
-  }
-
   let html = '<h2>نتيجة الحاسبة:</h2>';
   schedule.forEach((p,i)=>{
-    const from = schedule.slice(0,i).reduce((s,x)=>s+x.months,0)+1,
-          to   = from + p.months - 1;
+    const from = schedule.slice(0,i).reduce((s,x)=>s+x.months,0)+1;
+    const to   = from + p.months - 1;
     html += `<p><strong>القسط من الشهر ${from} إلى ${to}:</strong> ${p.inst.toFixed(0)} ريال</p>`;
   });
   html += `
@@ -229,21 +203,11 @@ function calculate(){
   <p><strong>الرسوم الإدارية:</strong> ${adminFee.toFixed(0)} ريال</p>
   <p><strong>ضريبة الرسوم:</strong> ${vat.toFixed(0)} ريال</p>
   ${addCommodityFee ? `<p><strong>رسوم السلع:</strong> ${commodityFee.toFixed(0)} ريال</p>` : ''}
-  ${supportText}
-  <p><strong>إجمالي التمويل مع الأرباح:</strong> ${totalInst.toFixed(0)} ريال</p>
   <h3 style="margin-top:20px;">📞 للتواصل مع سرعة تملك العقار والحلول التمويلية</h3>
   <p>0506214458 – hlooleqrr.com</p>
   `;
   document.getElementById('question').innerHTML = html;
 }
-
-function updateDateTime(){
-  const n = new Date();
-  document.getElementById('datetime').innerText =
-    `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')} `+
-    `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
-}
-setInterval(updateDateTime, 1000); updateDateTime();
 </script>
 
 <footer>

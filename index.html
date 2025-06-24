@@ -32,10 +32,9 @@
       font-size: 30px;
       border-radius: 5px;
       border: 1px solid #ccc;
-      box-sizing: border-box;
     }
-    select option {
-      font-size: 28px;
+    select {
+      height: 75px;
     }
     button {
       background: #00796b;
@@ -75,14 +74,6 @@
         opacity: 1;
         transform: translateY(0);
       }
-    }
-    .result p {
-      margin: 10px 0;
-      font-size: 28px;
-      line-height: 1.5;
-    }
-    .result h2, .result h3 {
-      font-size: 32px;
     }
   </style>
 </head>
@@ -248,7 +239,7 @@ function calculate(){
       supportText = `<p><strong>تم توزيع دعم الدفعة (${sup.toLocaleString()} ريال) على ${dist} شهر = ${monthly.toLocaleString()} ريال</strong></p>`;
     }
   }
-  let html = '<div class="result"><h2>نتيجة الحاسبة:</h2>';
+  let html = '<h2>نتيجة الحاسبة:</h2>';
   finalPhases.forEach(p=>{
     html += `<p><strong>القسط من الشهر ${p.from} إلى ${p.to}:</strong> ${p.inst.toFixed(0)} ريال</p>`;
   });
@@ -264,7 +255,7 @@ function calculate(){
   ${addCommodityFee ? `<p><strong>رسوم السلع:</strong> ${commodityFee.toFixed(0)} ريال</p>` : ''}
   <p><strong>إجمالي التمويل مع الأرباح:</strong> ${totalInst.toFixed(0)} ريال</p>
   <h3 style="margin-top:20px;">📞 للتواصل مع سرعة تملك العقار والحلول التمويلية</h3>
-  <p>0506214458 – hlooleqrr.com</p></div>
+  <p>0506214458 – hlooleqrr.com</p>
   `;
   document.getElementById('question').innerHTML = html;
 }

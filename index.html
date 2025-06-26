@@ -274,11 +274,11 @@ function nextQuestion(){
     html += `<p><strong>القسط من الشهر ${p.from} إلى ${p.to}:</strong> ${p.inst.toFixed(0)} ريال</p>`;
   });
   html += `
-  <p style="color: green; font-size: 40px; font-weight: bold;">✅ التمويل الصافي بعد خصم الرسوم النهائي: ${finalNet.toFixed(0)} ريال</p>
+  <p style="color: green; font-size: 44px; font-weight: bold;">✅ التمويل الصافي بعد خصم الرسوم النهائي: ${finalNet.toFixed(0)} ريال</p>
   ${supportText}
-  <p style="color: green; font-size: 34px;"><strong>التمويل الصافي قبل خصم الرسوم:</strong> ${netFinance.toFixed(0)} ريال</p>
-  <p style="color: red; font-size: 34px;"><strong>الربح دون الرسوم:</strong> ${(totalInst - netFinance).toFixed(0)} ريال</p>
-  <p style="color: red; font-size: 38px;"><strong>الربح مع الرسوم:</strong> ${totalProfitWithFees.toFixed(0)} ريال</p>
+  <p style="color: green; font-size: 36px;"><strong>التمويل الصافي قبل خصم الرسوم:</strong> ${netFinance.toFixed(0)} ريال</p>
+  <p style="color: red; font-size: 36px;"><strong>الربح دون الرسوم:</strong> ${(totalInst - netFinance).toFixed(0)} ريال</p>
+  <p style="color: red; font-size: 40px;"><strong>الربح مع الرسوم:</strong> ${totalProfitWithFees.toFixed(0)} ريال</p>
   <p><strong>معامل الربح:</strong> ${profitFactor.toFixed(3)}</p>
   <p><strong>الرسوم الإدارية:</strong> ${adminFee.toFixed(0)} ريال</p>
   <p><strong>ضريبة الرسوم:</strong> ${vat.toFixed(0)} ريال</p>

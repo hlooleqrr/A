@@ -274,7 +274,7 @@ function nextQuestion(){
     html += `<p><strong>القسط من الشهر ${p.from} إلى ${p.to}:</strong> ${p.inst.toFixed(0)} ريال</p>`;
   });
   html += `
-  <p style="color: green; font-size: 44px; font-weight: bold;">✅ التمويل الصافي بعد خصم الرسوم النهائي: ${finalNet.toFixed(0)} ريال</p>
+  <p style="color: green; font-size: 44px; font-weight: bold;"> التمويل الصافي بعد خصم الرسوم النهائي: ${finalNet.toFixed(0)} ريال</p>
   ${supportText}
   <p style="color: green; font-size: 36px;"><strong>التمويل الصافي قبل خصم الرسوم:</strong> ${netFinance.toFixed(0)} ريال</p>
   <p style="color: red; font-size: 36px;"><strong>الربح دون الرسوم:</strong> ${(totalInst - netFinance).toFixed(0)} ريال</p>

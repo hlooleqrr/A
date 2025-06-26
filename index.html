@@ -121,7 +121,7 @@ const generalQuestions = [
 ];
 
 const commitmentQuestions = [
-  { id:'type',label:'نوع الالتزام',type:'select',options:['قرض شخصي','قرض سيارة','قرض استهلاكي','تمويل عقاري'] },
+  { id:'type',label:'نوع الالتزام',type:'select',options:['قرض شخصي','قرض سيارة','قرض استهلاكي','قرض عقاري'] },
   { id:'amount',label:'كم القسط الشهري؟',type:'number' },
   { id:'months',label:'كم عدد الأشهر المتبقية؟',type:'select',options:[],dynamic:true },
   { id:'balloon',label:'هل يوجد دفعةأخيرة(لسيارة)؟',type:'select',options:['نعم','لا'],show:c=>c.type==='قرض سيارة' },
@@ -277,14 +277,14 @@ function nextQuestion(){
   <p style="color: green; font-size: 40px; font-weight: bold;">✅ التمويل الصافي بعد خصم الرسوم النهائي: ${finalNet.toFixed(0)} ريال</p>
   ${supportText}
   <p style="color: green; font-size: 34px;"><strong>التمويل الصافي قبل خصم الرسوم:</strong> ${netFinance.toFixed(0)} ريال</p>
-  <p style="color: red; font-size: 32px;"><strong>الربح دون الرسوم:</strong> ${(totalInst - netFinance).toFixed(0)} ريال</p>
-  <p style="color: red; font-size: 34px;"><strong>الربح مع الرسوم:</strong> ${totalProfitWithFees.toFixed(0)} ريال</p>
+  <p style="color: red; font-size: 34px;"><strong>الربح دون الرسوم:</strong> ${(totalInst - netFinance).toFixed(0)} ريال</p>
+  <p style="color: red; font-size: 38px;"><strong>الربح مع الرسوم:</strong> ${totalProfitWithFees.toFixed(0)} ريال</p>
   <p><strong>معامل الربح:</strong> ${profitFactor.toFixed(3)}</p>
   <p><strong>الرسوم الإدارية:</strong> ${adminFee.toFixed(0)} ريال</p>
   <p><strong>ضريبة الرسوم:</strong> ${vat.toFixed(0)} ريال</p>
   ${addCommodityFee ? `<p><strong>رسوم السلع:</strong> ${commodityFee.toFixed(0)} ريال</p>` : ''}
   <p><strong>إجمالي التمويل مع الأرباح:</strong> ${totalInst.toFixed(0)} ريال</p>
-  <h3 style="margin-top:30px;">📱 خذ لقطة شاشة وتواصل معنا: 0506214458 أو زر موقعنا: hlooleqrr.com</h3>
+  <h3 style="margin-top:30px;"> خذ لقطة شاشة وتواصل معنا: 0506214458 أو زر موقعنا: hlooleqrr.com</h3>
   </div>`;
 
   document.getElementById('question').innerHTML = html;

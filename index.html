@@ -165,9 +165,9 @@ function resetCalc(){
     const sel = document.createElement('select'); sel.id = q.id;
     sel.innerHTML = '<option value="">اختر...</option>';
     if(q.dynamic && q.id==='months' && currentCommitment.type==='تمويل عقاري'){
-      for(let i=12;i<=360;i++) sel.innerHTML += `<option value="${i}">${i} شهر</option>`;
+      for(let i=1;i<=360;i++) sel.innerHTML += `<option value="${i}">${i} شهر</option>`;
     } else if(q.dynamic && q.id==='months'){
-      for(let i=1;i<=60;i++) sel.innerHTML += `<option value="${i}">${i} شهر</option>`;
+      for(let i=1;i<=360;i++) sel.innerHTML += `<option value="${i}">${i} شهر</option>`;
     } else {
       q.options.forEach(opt=>{ sel.innerHTML += `<option value="${opt}">${opt}</option>`; });
     }

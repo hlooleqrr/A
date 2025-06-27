@@ -104,7 +104,7 @@ let answers = { commitments: [] }, step = 0, commitmentStep = 0, currentCommitme
 let hasStarted = false;
 
 const generalQuestions = [
-  { id:'clientName',label:'  { id:'clientName',label:'اسمك الكريم',type:'text', pattern: "[\u0600-\u06FF ]+", title:"يرجى كتابة الاسم بالحروف العربية فقط" },
+  { id:'clientName',label:'اسمك الكريم',type:'text', pattern: "[\u0600-\u06FF ]+", title:"يرجى كتابة الاسم بالحروف العربية فقط" },
   { id:'birthDay',label:'اختر يوم الميلاد:',type:'select',options:Array.from({length:30},(_,i)=>i+1),default:1 },
   { id:'birthMonth',label:'اختر شهر الميلاد:',type:'select',options:Array.from({length:12},(_,i)=>i+1),default:1 },
   { id:'birthYear',label:'اختر سنة الميلاد:',type:'select',options:Array.from({length:61},(_,i)=>1370+i),default:1412 },

@@ -292,4 +292,86 @@ function showQuestion(){
   </div>`;
 
   document.getElementById('question').innerHTML = html;
+}<script>
+// دالة تنسيق الأرقام بفاصلة عشرية واحدة
+function formatNumber(n) {
+  const parts = (+n.toFixed(4)).toString().split(".");
+  let formatted = (+parts[0]).toLocaleString("en-US");
+  if (parts[1] && +parts[1] !== 0) {
+    formatted += "." + parts[1];
+  }
+  return formatted + " ريال (" + numberToArabicWords(n) + ")";
 }
+
+// دالة تحويل عدد الأشهر إلى كتابة بالعربي
+function convertMonthsToText(months) {
+  const years = Math.floor(months / 12);
+  const remainingMonths = months % 12;
+  let result = "";
+
+  if (years > 0) {
+    result += numberToWords(years) + " سنة";
+  }
+  if (remainingMonths > 0) {
+    if (result) result += " و ";
+    result += numberToWords(remainingMonths) + " شهر";
+  }
+
+  return result || "شهر واحد";
+}
+
+// دالة تحويل الأرقام إلى نص عربي مبسط
+function numberToArabicWords(number) {
+  const riyals = Math.floor(number);
+  const parts = riyals.toLocaleString('en-US').split(',');
+  let words = [];
+
+  if (parts.length === 1) {
+    words.push(numberToWords(riyals));
+  } else if (parts.length === 2) {
+    words.push(numberToWords(+parts[0]) + " ألف");
+    const rest = +parts[1];
+    if (rest) words.push(numberToWords(rest));
+  } else if (parts.length === 3) {
+    words.push(numberToWords(+parts[0]) + " مليون");
+    const mid = +parts[1];
+    const last = +parts[2];
+    if (mid) words.push(numberToWords(mid) + " ألف");
+    if (last) words.push(numberToWords(last));
+  }
+
+  let fractional = (+number - riyals).toFixed(4).split('.')[1];
+  let fraction = parseInt(fractional || "0");
+  if (fraction) {
+    words.push(convertFraction(fraction));
+  }
+
+  return words.join(" ") + " ريال";
+}
+
+// دالة كتابة الأرقام بالعربي
+function numberToWords(n) {
+  const words = ["", "واحد", "اثنين", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة",
+    "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
+  const tens = ["", "", "عشرون", "ثلاثون", "أربعون", "خمسون", "ستون", "سبعون", "ثمانون", "تسعون"];
+  if (n < 20) return words[n];
+  if (n < 100) return (words[n % 10] ? words[n % 10] + " و " : "") + tens[Math.floor(n / 10)];
+  if (n < 1000) {
+    const hundreds = Math.floor(n / 100);
+    const rest = n % 100;
+    let hText = hundreds === 1 ? "مئة" : hundreds === 2 ? "مئتان" : numberToWords(hundreds) + " مئة";
+    return rest ? hText + " و " + numberToWords(rest) : hText;
+  }
+  return n.toLocaleString("en-US");
+}
+
+// دالة تحويل الكسور إلى هلالات أو أجزاء
+function convertFraction(f) {
+  if (f >= 1 && f <= 9) return numberToWords(f) + " هلالات";
+  if (f % 10 === 0) return numberToWords(f / 10) + " من عشرة";
+  if (f % 100 === 0) return numberToWords(f / 100) + " من المئة";
+  return numberToWords(f) + " جزء من الألف";
+}
+</script>
+</body>
+</html>

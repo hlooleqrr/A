@@ -59,23 +59,6 @@
     .small-reset:hover {
       background: #bbdefb;
     }
-    footer {
-      font-size: 24px;
-      color: #666;
-      margin-top: 40px;
-      padding: 15px;
-    }
-    .fade-in {
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeInMove .6s forwards;
-    }
-    @keyframes fadeInMove {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
     .result p {
       margin: 12px 0;
       font-size: 30px;
@@ -83,11 +66,6 @@
     }
     .result h2, .result h3 {
       font-size: 34px;
-    }
-    .highlight {
-      font-size: 36px;
-      font-weight: bold;
-      color: #004d40;
     }
     .red-warning {
       color: red;
@@ -110,7 +88,11 @@
   <div id="resetButtonContainer" style="display:none">
     <button class="small-reset" onclick="resetCalc()">🔁 إعادة الحسبة</button>
   </div>
-</div><script>
+</div>
+<script>
+let hasStarted = false;
+let answers = {}, step = 0;
+
 const militaryRanks = {
   "جندي": 44, "جندي أول": 44, "عريف": 46, "وكيل رقيب": 48,
   "رقيب": 50, "رقيب أول": 50, "رئيس رقباء": 52,
@@ -119,7 +101,7 @@ const militaryRanks = {
 };
 
 function hijriToGregorianYear(hijriDate) {
-  const [y, m, d] = hijriDate.replace('هـ','').trim().split('/').map(x => parseInt(x));
+  const [y] = hijriDate.replace('هـ','').trim().split('/').map(x => parseInt(x));
   const estimatedYear = y + 622 - Math.floor(y / 33); 
   const current = new Date();
   return current.getFullYear() - estimatedYear;
@@ -136,9 +118,10 @@ function getMaxMonths(age, type, rank = null) {
 function convertMonthsToText(months) {
   const years = Math.floor(months / 12);
   const rem = months % 12;
-  let yTxt = years > 0 ? `${convertNumberToArabicText(years)} سنة` : '';
-  let mTxt = rem > 0 ? `${convertNumberToArabicText(rem)} شهر` : '';
-  return [yTxt, mTxt].filter(Boolean).join(' و');
+  return [
+    years > 0 ? `${convertNumberToArabicText(years)} سنة` : '',
+    rem > 0 ? `${convertNumberToArabicText(rem)} شهر` : ''
+  ].filter(Boolean).join(' و');
 }
 
 function convertNumberToArabicText(n) {
@@ -151,8 +134,6 @@ function convertNumberToArabicText(n) {
   return `${units[n % 10]} و${tens[Math.floor(n / 10)]}`;
 }
 
-let answers = {}, step = 0;
-
 const generalQuestions = [
   { id:'financeType',label:'اختر نوع التمويل:',type:'select',options:['تمويل شخصي أو تمويل استهلاكي','تمويل عقاري'] },
   { id:'jobType',label:'ما نوع الوظيفة؟',type:'select',options:['عسكري','مدني','قطاع خاص شبه حكومي','قطاع خاص معتمد لدى البنك','قطاع خاص غير معتمد'] },
@@ -161,7 +142,8 @@ const generalQuestions = [
   { id:'salary',label:'كم الراتب الشهري الصافي؟',type:'number' },
   { id:'months',label:'على كم شهر تريد التمويل؟',type:'select',options:[],dynamic:true },
   { id:'profitMargin',label:'نسبة هامش الربح السنوي (%)؟',type:'number' }
-];<script>
+];
+
 function handleStartOrReset(){
   if(!hasStarted){
     hasStarted = true;
@@ -192,7 +174,7 @@ function showQuestion(){
   }
   if(!q){ document.getElementById('nextContainer').style.display = 'none'; calculate(); return; }
 
-  const div = document.createElement('div'); div.classList.add('fade-in');
+  const div = document.createElement('div');
   div.innerHTML = `<label>${q.label}</label><br>`;
   if(q.type==='select'){
     const sel = document.createElement('select'); sel.id = q.id;
@@ -208,7 +190,7 @@ function showQuestion(){
       q.options.forEach(opt=>{ sel.innerHTML += `<option value="${opt}">${opt}</option>`; });
     }
     div.appendChild(sel);
-  }else{
+  } else {
     const inp = document.createElement('input');
     inp.type = q.type || 'text'; inp.id = q.id;
     if(q.placeholder) inp.placeholder = q.placeholder;
@@ -226,15 +208,13 @@ function nextQuestion(){
   step++;
   showQuestion();
 }
-</script><script>
+
 function calculate(){
   const salary = parseFloat(answers.salary);
   const months = parseInt(answers.months);
   const years = months / 12;
   const profitMargin = parseFloat(answers.profitMargin);
-
-  let deductionRate = 65;
-  if(answers.financeType.includes('شخصي')) deductionRate = 45;
+  let deductionRate = answers.financeType.includes('شخصي') ? 45 : 65;
 
   const allowedInst = salary * (deductionRate / 100);
   const totalInst = allowedInst * months;
@@ -246,14 +226,6 @@ function calculate(){
   const finalNet = netFinance - (adminFee + vat);
   const totalProfit = totalInst - finalNet;
 
-  const resultDiv = document.createElement('div');
-  resultDiv.classList.add('result');
-  let html = '<h2>نتيجة الحسبة (التقريبية):</h2>';
-
-  if (allowedInst <= 0 || netFinance <= 0) {
-    html += `<p class="red-warning">❌ نعتذر منك، لا يمكن تمويلك</p>`;
-  }
-
   const toText = n => {
     const parts = n.toFixed(4).split(".");
     const main = parseInt(parts[0]).toLocaleString();
@@ -263,12 +235,14 @@ function calculate(){
 
   const arabicText = n => {
     const riyals = Math.floor(n);
-    const parts = riyals.toLocaleString() + ' ريال';
     const dec = Math.round((n - riyals) * 10000);
-    const halalahText = dec > 0 ? `${convertNumberToArabicText(dec)} هلالات` : '';
-    return [parts, halalahText].filter(Boolean).join(' و');
+    return [riyals.toLocaleString() + ' ريال', dec > 0 ? `${convertNumberToArabicText(dec)} هلالات` : ''].filter(Boolean).join(' و');
   };
 
+  let html = '<div class="result"><h2>نتيجة الحسبة (التقريبية):</h2>';
+  if (allowedInst <= 0 || netFinance <= 0) {
+    html += `<p class="red-warning">❌ نعتذر منك، لا يمكن تمويلك</p>`;
+  }
   html += `
     <p><strong>القسط الشهري:</strong> ${allowedInst.toFixed(0)} ريال</p>
     <p style="font-size: 32px; color: #004d40; font-weight: bold;">مدة التمويل: ${months} شهر – ${convertMonthsToText(months)}</p>
@@ -279,10 +253,9 @@ function calculate(){
     <p><strong>ضريبة القيمة المضافة:</strong> ${vat.toFixed(0)} ريال</p>
     <p><strong>إجمالي التمويل مع الأرباح:</strong> ${totalInst.toFixed(0)} ريال</p>
     <h3 style="margin-top:30px;">📞 للاستفسار: 0506214458 | الموقع: hlooleqrr.com</h3>
-  `;
+  </div>`;
   document.getElementById('question').innerHTML = html;
 }
 </script>
 </body>
 </html>
-</script>

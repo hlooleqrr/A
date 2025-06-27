@@ -104,7 +104,7 @@ let answers = { commitments: [] }, step = 0, commitmentStep = 0, currentCommitme
 let hasStarted = false;
 
 const generalQuestions = [
-  { id:'clientName',label:'اسمك الكريم',type:'text' }
+  { id:'clientName',label:'اسمك الكريم',type:'text' },
   { id:'birthDay',label:'اختر يوم الميلاد:',type:'select',options:Array.from({length:30},(_,i)=>i+1),default:1 },
   { id:'birthMonth',label:'اختر شهر الميلاد:',type:'select',options:Array.from({length:12},(_,i)=>i+1),default:1 },
   { id:'birthYear',label:'اختر سنة الميلاد:',type:'select',options:Array.from({length:61},(_,i)=>1370+i),default:1412 },
@@ -119,6 +119,15 @@ const generalQuestions = [
   { id:'hasCommitments',label:'هل لديك التزامات؟',type:'select',options:['نعم','لا'] }
 ];
 
+const commitmentQuestions = [
+  { id:'type',label:'نوع الالتزام',type:'select',options:['قرض شخصي','قرض سيارة','قرض استهلاكي','قرض عقاري'] },
+  { id:'amount',label:'كم القسط الشهري؟',type:'number' },
+  { id:'months',label:'كم عدد الأشهر المتبقية؟',type:'select',options:[],dynamic:true },
+  { id:'balloon',label:'هل يوجد دفعةأخيرة(لسيارة)؟',type:'select',options:['نعم','لا'],show:c=>c.type==='قرض سيارة' },
+  { id:'balloonAmount',label:'كم مبلغ الدفعة الأخيرة؟',type:'number',show:c=>c.balloon==='نعم' },
+  { id:'more',label:'هل لديك التزامات أخرى؟',type:'select',options:['نعم','لا'] }
+];
+
 function getRetirementAge(rank){
   return {
     'جندي':44,'عريف':46,'رقيب':48,'رئيس رقباء':50,'نقيب':52,
@@ -128,8 +137,6 @@ function getRetirementAge(rank){
 
 function getMaxAllowedMonths(){
   const year = parseInt(answers.birthYear);
-  const month = parseInt(answers.birthMonth || 1);
-  const day = parseInt(answers.birthDay || 1);
   const age = 1446 - year;
   let maxAge = 60;
   if(answers.jobType === 'عسكري'){
@@ -141,7 +148,6 @@ function getMaxAllowedMonths(){
     showSorryPage(answers.clientName || "العميل");
     return 0;
   }
-
   return Math.min(remainingMonths, answers.financeType.includes('شخصي') ? 60 : 360);
 }
 
@@ -162,17 +168,7 @@ function showSorryPage(name){
     <p style="font-size:32px;">إذا متقاعد تواصل اتصال للاستفسار 😌</p>
     <p style="font-size:30px;">سامحنا ما فيه حسبة هنا</p>
   </div>`;
-}
-</script><script>
-const commitmentQuestions = [
-  { id:'type',label:'نوع الالتزام',type:'select',options:['قرض شخصي','قرض سيارة','قرض استهلاكي','قرض عقاري'] },
-  { id:'amount',label:'كم القسط الشهري؟',type:'number' },
-  { id:'months',label:'كم عدد الأشهر المتبقية؟',type:'select',options:[],dynamic:true },
-  { id:'balloon',label:'هل يوجد دفعةأخيرة(لسيارة)؟',type:'select',options:['نعم','لا'],show:c=>c.type==='قرض سيارة' },
-  { id:'balloonAmount',label:'كم مبلغ الدفعة الأخيرة؟',type:'number',show:c=>c.balloon==='نعم' },
-  { id:'more',label:'هل لديك التزامات أخرى؟',type:'select',options:['نعم','لا'] }
-];
-
+}<script>
 function handleStartOrReset(){
   if(!hasStarted){
     hasStarted = true;
@@ -218,10 +214,12 @@ function showQuestion(){
     }
     div.appendChild(sel);
   }else{
-    div.innerHTML += `<input type="number" id="${q.id}" ${q.default ? `value="${q.default}"` : ''}>`;
+    div.innerHTML += `<input type="${q.type}" id="${q.id}" ${q.default ? `value="${q.default}"` : ''}>`;
   }
   cont.appendChild(div);
-}function nextQuestion(){
+}
+
+function nextQuestion(){
   const q = step < generalQuestions.length ? generalQuestions[step] : commitmentQuestions[commitmentStep];
   const el = document.getElementById(q.id);
   const val = el?.value;
@@ -251,7 +249,7 @@ function showQuestion(){
   }
   showQuestion();
 }
-</script><script>
+
 function calculate(){
   const salary = parseFloat(answers.salary),
         months = parseInt(answers.months),
@@ -320,9 +318,10 @@ function calculate(){
             monthly = Math.round(sup / dist);
       supportText = `<p class="highlight">تم توزيع دعم الدفعة (${sup.toLocaleString()} ريال) على ${dist} شهر = ${monthly.toLocaleString()} ريال</p>`;
     }
-  }  const name = answers.clientName || "العميل";
-  const duration = describeMonths(months);
+  }
 
+  const name = answers.clientName || "العميل";
+  const duration = describeMonths(months);
   let html = '<div class="result"><h2>نتيجة الحسبة (التقريبية):</h2>';
   html += `<p style="color:#1565c0; font-size:36px;"><strong>مرحباً ومسهلا يا ${name}</strong></p>`;
   html += `<p style="font-size:32px;">مدة التمويل: <strong>${duration}</strong></p>`;

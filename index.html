@@ -99,8 +99,8 @@
   <div id="resetButtonContainer" style="display:none">
     <button class="small-reset" onclick="resetCalc()">🔁 إعادة الحسبة</button>
   </div>
-</div><script>
-let answers = { commitments: [] }, step = 0, commitmentStep = 0, currentCommitment = {};
+</div>
+<script>let answers = { commitments: [] }, step = 0, commitmentStep = 0, currentCommitment = {};
 let hasStarted = false;
 
 const generalQuestions = [
@@ -160,6 +160,23 @@ function describeMonths(m){
   return result.trim();
 }
 
+function numberToArabicWords(n){
+  if (n < 1000) return `${n} ريال`;
+  let parts = [];
+  if(n >= 1_000_000){
+    let mil = Math.floor(n / 1_000_000);
+    parts.push(mil === 1 ? "مليون" : mil === 2 ? "مليونان" : mil <= 10 ? `${mil} ملايين` : `${mil} مليون`);
+    n %= 1_000_000;
+  }
+  if(n >= 1000){
+    let th = Math.floor(n / 1000);
+    parts.push(th === 1 ? "ألف" : th === 2 ? "ألفان" : th <= 10 ? `${th} آلاف` : `${th} ألف`);
+    n %= 1000;
+  }
+  if(n > 0) parts.push(`${n}`);
+  return parts.join(" و ") + " ريال";
+}
+
 function showSorryPage(name){
   const cont = document.getElementById('question');
   document.getElementById('nextContainer').style.display = 'none';
@@ -168,8 +185,7 @@ function showSorryPage(name){
     <p style="font-size:32px;">إذا متقاعد تواصل اتصال للاستفسار 😌</p>
     <p style="font-size:30px;">سامحنا ما فيه حسبة هنا</p>
   </div>`;
-}<script>
-function handleStartOrReset(){
+}function handleStartOrReset(){
   if(!hasStarted){
     hasStarted = true;
     document.getElementById('mainButton').style.display = 'none';
@@ -322,30 +338,36 @@ function calculate(){
 
   const name = answers.clientName || "العميل";
   const duration = describeMonths(months);
+  const finalNetFixed = finalNet.toFixed(0);
   let html = '<div class="result"><h2>نتيجة الحسبة (التقريبية):</h2>';
   html += `<p style="color:#1565c0; font-size:36px;"><strong>مرحباً ومسهلا يا ${name}</strong></p>`;
   html += `<p style="font-size:32px;">مدة التمويل: <strong>${duration}</strong></p>`;
 
+  if (finalPhases.every(p => p.inst <= 0)) {
+    html += `<p style="color:red; font-size:38px; font-weight:bold;">نعتذر منك لا يمكن تمويلك</p>`;
+  }
+
   finalPhases.forEach(p=>{
-    html += `<p><strong>القسط من الشهر ${p.from} إلى ${p.to}:</strong> ${p.inst.toFixed(0)} ريال</p>`;
+    html += `<p><strong>القسط من الشهر ${p.from} إلى ${p.to}:</strong> ${p.inst.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ريال</p>`;
   });
+
   html += `
-  <p style="color: green; font-size: 44px; font-weight: bold;"> التمويل الصافي بعد خصم الرسوم النهائية: ${finalNet.toFixed(0)} ريال</p>
+  <p style="color: green; font-size: 44px; font-weight: bold;"> التمويل الصافي بعد خصم الرسوم النهائية: ${finalNetFixed.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ريال</p>
   ${supportText}
-  <p style="color: green; font-size: 36px;"><strong>التمويل الصافي قبل خصم الرسوم:</strong> ${netFinance.toFixed(0)} ريال</p>
-  <p style="color: red; font-size: 36px;"><strong>الربح دون الرسوم:</strong> ${(totalInst - netFinance).toFixed(0)} ريال</p>
-  <p style="color: red; font-size: 42px;"><strong>الربح مع الرسوم:</strong> ${totalProfitWithFees.toFixed(0)} ريال</p>
+  <p style="color: green; font-size: 36px;"><strong>التمويل الصافي قبل خصم الرسوم:</strong> ${netFinance.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ريال</p>
+  <p style="color: red; font-size: 36px;"><strong>الربح دون الرسوم:</strong> ${(totalInst - netFinance).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ريال</p>
+  <p style="color: red; font-size: 42px;"><strong>الربح مع الرسوم:</strong> ${totalProfitWithFees.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ريال</p>
   <p><strong>معامل الربح:</strong> ${profitFactor.toFixed(3)}</p>
   <p><strong>الرسوم الإدارية:</strong> ${adminFee.toFixed(0)} ريال</p>
   <p><strong>ضريبة الرسوم:</strong> ${vat.toFixed(0)} ريال</p>
   ${addCommodityFee ? `<p><strong>رسوم السلع:</strong> ${commodityFee.toFixed(0)} ريال</p>` : ''}
-  <p><strong>إجمالي التمويل مع الأرباح:</strong> ${totalInst.toFixed(0)} ريال</p>
+  <p><strong>إجمالي التمويل مع الأرباح:</strong> ${totalInst.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ريال</p>
+  <p><strong>بالأحرف:</strong> ${numberToArabicWords(parseInt(finalNetFixed))}</p>
   <h3 style="margin-top:30px;"> خذ لقطة شاشة وتواصل معنا: 📞0506214458  زورو موقعنا: hlooleqrr.com</h3>
   </div>`;
   document.getElementById('question').innerHTML = html;
 }
 </script>
-
 <footer>
   <p>جميع الحقوق محفوظة - سرعة تملك العقار والحلول التمويلية - <span id="datetime"></span></p>
 </footer>

@@ -99,8 +99,7 @@
   <div id="resetButtonContainer" style="display:none">
     <button class="small-reset" onclick="resetCalc()">🔁 إعادة الحسبة</button>
   </div>
-</div>
-<script>
+</div><script>
 let answers = { commitments: [] }, step = 0, commitmentStep = 0, currentCommitment = {};
 let hasStarted = false;
 
@@ -119,6 +118,51 @@ const generalQuestions = [
   { id:'profitMargin',label:'نسبة هامش الربح السنوي (%)؟',type:'number' },
   { id:'hasCommitments',label:'هل لديك التزامات؟',type:'select',options:['نعم','لا'] }
 ];
+
+function getRetirementAge(rank){
+  return {
+    'جندي':44,'عريف':46,'رقيب':48,'رئيس رقباء':50,'نقيب':52,
+    'رائد':54,'مقدم':55,'عقيد':56,'عميد':57,'لواء':58
+  }[rank] || 44;
+}
+
+function getMaxAllowedMonths(){
+  const year = parseInt(answers.birthYear);
+  const month = parseInt(answers.birthMonth || 1);
+  const day = parseInt(answers.birthDay || 1);
+  const age = 1446 - year;
+  let maxAge = 60;
+  if(answers.jobType === 'عسكري'){
+    maxAge = getRetirementAge(answers.militaryRank || 'جندي');
+  }
+  const remainingYears = maxAge - age;
+  const remainingMonths = remainingYears * 12;
+  if(remainingMonths <= 0){
+    showSorryPage(answers.clientName || "العميل");
+    return 0;
+  }
+
+  return Math.min(remainingMonths, answers.financeType.includes('شخصي') ? 60 : 360);
+}
+
+function describeMonths(m){
+  const y = Math.floor(m / 12), mo = m % 12;
+  let result = `${m} شهر`;
+  let yTxt = y === 1 ? "سنة واحدة" : y === 2 ? "سنتان" : y >= 3 && y <= 10 ? `${y} سنوات` : y > 10 ? `${y} سنة` : '';
+  let mTxt = mo === 1 ? "وشهر واحد" : mo === 2 ? "وشهرين" : mo >= 3 && mo <= 10 ? `و${mo} أشهر` : mo > 10 ? `و${mo} شهر` : '';
+  if (yTxt || mTxt) result += ` (${yTxt} ${mTxt})`;
+  return result.trim();
+}
+
+function showSorryPage(name){
+  const cont = document.getElementById('question');
+  document.getElementById('nextContainer').style.display = 'none';
+  cont.innerHTML = `<div class="result fade-in">
+    <h2>معليش ${name}، انت متقاعد؟</h2>
+    <p style="font-size:32px;">إذا متقاعد تواصل اتصال للاستفسار 😌</p>
+    <p style="font-size:30px;">سامحنا ما فيه حسبة هنا</p>
+  </div>`;
+}
 </script><script>
 const commitmentQuestions = [
   { id:'type',label:'نوع الالتزام',type:'select',options:['قرض شخصي','قرض سيارة','قرض استهلاكي','قرض عقاري'] },
@@ -146,32 +190,6 @@ function resetCalc(){
   document.getElementById('mainButton').style.display = 'none';
   document.getElementById('resetButtonContainer').style.display = 'block';
   showQuestion();
-}
-
-function getRetirementAge(rank){
-  return {
-    'جندي':44,'عريف':46,'رقيب':48,'رئيس رقباء':50,'نقيب':52,
-    'رائد':54,'مقدم':55,'عقيد':56,'عميد':57,'لواء':58
-  }[rank] || 44;
-}
-
-function getMaxAllowedMonths(){
-  const year = parseInt(answers.birthYear);
-  const age = 1446 - year;
-  let maxAge = 60;
-  if(answers.jobType === 'عسكري'){
-    maxAge = getRetirementAge(answers.militaryRank || 'جندي');
-  }
-  return Math.max((maxAge - age) * 12, 0);
-}
-
-function describeMonths(m){
-  const y = Math.floor(m / 12), mo = m % 12;
-  let result = `${m} شهر`;
-  let yTxt = y === 1 ? "سنة واحدة" : y === 2 ? "سنتان" : y >= 3 && y <= 10 ? `${y} سنوات` : y > 10 ? `${y} سنة` : '';
-  let mTxt = mo === 1 ? "وشهر واحد" : mo === 2 ? "وشهرين" : mo >= 3 && mo <= 10 ? `و${mo} أشهر` : mo > 10 ? `و${mo} شهر` : '';
-  if (yTxt || mTxt) result += ` (${yTxt} ${mTxt})`;
-  return result.trim();
 }
 
 function showQuestion(){
@@ -203,9 +221,7 @@ function showQuestion(){
     div.innerHTML += `<input type="number" id="${q.id}" ${q.default ? `value="${q.default}"` : ''}>`;
   }
   cont.appendChild(div);
-}
-
-function nextQuestion(){
+}function nextQuestion(){
   const q = step < generalQuestions.length ? generalQuestions[step] : commitmentQuestions[commitmentStep];
   const el = document.getElementById(q.id);
   const val = el?.value;
@@ -304,9 +320,7 @@ function calculate(){
             monthly = Math.round(sup / dist);
       supportText = `<p class="highlight">تم توزيع دعم الدفعة (${sup.toLocaleString()} ريال) على ${dist} شهر = ${monthly.toLocaleString()} ريال</p>`;
     }
-  }
-
-  const name = answers.clientName || "العميل";
+  }  const name = answers.clientName || "العميل";
   const duration = describeMonths(months);
 
   let html = '<div class="result"><h2>نتيجة الحسبة (التقريبية):</h2>';
@@ -329,7 +343,6 @@ function calculate(){
   <p><strong>إجمالي التمويل مع الأرباح:</strong> ${totalInst.toFixed(0)} ريال</p>
   <h3 style="margin-top:30px;"> خذ لقطة شاشة وتواصل معنا: 📞0506214458  زورو موقعنا: hlooleqrr.com</h3>
   </div>`;
-
   document.getElementById('question').innerHTML = html;
 }
 </script>

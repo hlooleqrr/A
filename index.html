@@ -105,7 +105,8 @@
   <div id="resetButtonContainer" style="display:none">
     <button class="small-reset" onclick="resetCalc()">🔁 إعادة الحسبة</button>
   </div>
-</div><script>
+</div>
+<script>
 let answers = { commitments: [] }, step = 0, commitmentStep = 0, currentCommitment = {};
 let hasStarted = false;
 
@@ -127,7 +128,9 @@ const commitmentQuestions = [
   { id:'balloon',label:'هل يوجد دفعةأخيرة(لسيارة)؟',type:'select',options:['نعم','لا'],show:c=>c.type==='قرض سيارة' },
   { id:'balloonAmount',label:'كم مبلغ الدفعة الأخيرة؟',type:'number',show:c=>c.balloon==='نعم' },
   { id:'more',label:'هل لديك التزامات أخرى؟',type:'select',options:['نعم','لا'] }
-];function handleStartOrReset(){
+];
+
+function handleStartOrReset(){
   if(!hasStarted){
     hasStarted = true;
     document.getElementById('mainButton').style.display = 'none';
@@ -176,7 +179,9 @@ function showQuestion(){
     div.innerHTML += `<input type="number" id="${q.id}">`;
   }
   cont.appendChild(div);
-}function nextQuestion(){
+}
+
+function nextQuestion(){
   const q = step < generalQuestions.length ? generalQuestions[step] : commitmentQuestions[commitmentStep];
   const el = document.getElementById(q.id);
   const val = el?.value;
@@ -197,103 +202,11 @@ function showQuestion(){
     commitmentStep++;
   }
   showQuestion();
-}function calculate(){
-  const salary = parseFloat(answers.salary),
-        months = parseInt(answers.months),
-        years  = months / 12,
-        profitMargin = parseFloat(answers.profitMargin),
-        { financeType, supported, bundle } = answers;
+}
+</script>
+<script>
+// ✅ الدوال منفصلة تمامًا عن calculate()
 
-  let deductionRate = 0, extraSupport = 0, addCommodityFee = false;
-  if(financeType.includes('شخصي') || financeType.includes('استهلاكي')){
-    if(months > 60){ alert('مدة التمويل الشخصي لا تتجاوز 60 شهر'); return; }
-    deductionRate = 45;
-    addCommodityFee = true;
-  }else{
-    if(supported === 'مدعوم'){
-      if(bundle === 'لا'){ deductionRate = 65; extraSupport = salary < 10000 ? 150000 : 100000; }
-      else{ deductionRate = salary < 15000 ? 55 : 65; }
-    }else{ deductionRate = salary < 15000 ? 55 : 65; }
-  }
-
-  let allowedInst = salary * deductionRate / 100;
-  let commits = [...answers.commitments].sort((a,b)=>parseInt(a.months)-parseInt(b.months));
-  let balloonPhases = [];
-
-  commits.forEach((c) => {
-    if (c.type === 'قرض سيارة' && c.balloon === 'نعم' && c.balloonAmount) {
-      const start = parseInt(c.months);
-      const end = start + 24;
-      balloonPhases.push({ start, end, value: c.balloonAmount / 24 });
-    }
-  });
-
-  let futurePhases = [];
-  for(let m = 1; m <= months; m++) {
-    let activeCommits = commits.filter(c => m <= parseInt(c.months)).reduce((sum, c) => sum + (c.amount || 0), 0);
-    let balloonExtra = balloonPhases.reduce((sum, b) => (m >= b.start && m < b.end) ? sum + b.value : sum, 0);
-    let available = allowedInst - activeCommits - balloonExtra;
-    if(financeType.includes('شخصي') || financeType.includes('استهلاكي')) available = Math.min(available, salary * 0.3333);
-    futurePhases.push({ month: m, inst: available });
-  }
-
-  let finalPhases = [];
-  for (let i = 0; i < futurePhases.length; i++) {
-    if (i === 0 || futurePhases[i].inst !== finalPhases[finalPhases.length - 1]?.inst) {
-      finalPhases.push({ from: futurePhases[i].month, to: futurePhases[i].month, inst: futurePhases[i].inst });
-    } else {
-      finalPhases[finalPhases.length - 1].to = futurePhases[i].month;
-    }
-  }  const totalInst = finalPhases.reduce((s,p)=>s + p.inst * (p.to - p.from + 1), 0);
-  const profitFactor = (years * profitMargin / 100) + 1;
-  const netFinance = totalInst / profitFactor;
-  let adminFee = netFinance * 0.01, vat = adminFee * 0.15;
-  if(adminFee + vat > 5750){ adminFee = 5000; vat = 750; }
-  const commodityFee = addCommodityFee ? netFinance * 0.01 : 0;
-  const finalNet = netFinance - (adminFee + vat + commodityFee);
-  const totalProfitWithFees = totalInst - finalNet;
-
-  let supportText = '';
-  if(financeType === 'تمويل عقاري' && supported === 'مدعوم'){
-    const sup = salary < 10000 ? 150000 : 100000;
-    if(bundle === 'نعم'){
-      supportText = `<p class="highlight">دعم حكومي مضاف: ${sup.toLocaleString()} ريال</p>`;
-    }else{
-      const dist = Math.min(months, 240),
-            monthly = Math.round(sup / dist);
-      supportText = `<p class="highlight">تم توزيع دعم الدفعة (${sup.toLocaleString()} ريال) على ${dist} شهر = ${monthly.toLocaleString()} ريال</p>`;
-    }
-  }
-
-  let html = '<div class="result"><h2>نتيجة الحسبة (التقريبية):</h2>';
-  finalPhases.forEach(p=>{
-    html += `<p><strong>القسط من الشهر ${p.from} إلى ${p.to}:</strong> ${p.inst.toFixed(0)} ريال</p>`;
-  });
-
-  // عرض المدة تحت الأقساط
-  html += `<p><strong>مدة التمويل:</strong> ${months} شهر (${convertMonthsToText(months)})</p>`;
-
-  if(finalPhases.every(p => p.inst <= 0)) {
-    html += `<p style="color:red; font-size:40px;"><strong>نعتذر منك لا يمكن تمويلك</strong></p>`;
-  }
-
-  html += `
-  <p style="color: green; font-size: 44px; font-weight: bold;"> التمويل الصافي بعد خصم الرسوم النهائية: ${formatNumber(finalNet)}</p>
-  ${supportText}
-  <p style="color: green; font-size: 36px;"><strong>التمويل الصافي قبل خصم الرسوم:</strong> ${formatNumber(netFinance)}</p>
-  <p style="color: red; font-size: 36px;"><strong>الربح دون الرسوم:</strong> ${formatNumber(totalInst - netFinance)}</p>
-  <p style="color: red; font-size: 42px;"><strong>الربح مع الرسوم:</strong> ${formatNumber(totalProfitWithFees)}</p>
-  <p><strong>معامل الربح:</strong> ${profitFactor.toFixed(3)}</p>
-  <p><strong>الرسوم الإدارية:</strong> ${formatNumber(adminFee)}</p>
-  <p><strong>ضريبة الرسوم:</strong> ${formatNumber(vat)}</p>
-  ${addCommodityFee ? `<p><strong>رسوم السلع:</strong> ${formatNumber(commodityFee)}</p>` : ''}
-  <p><strong>إجمالي التمويل مع الأرباح:</strong> ${formatNumber(totalInst)}</p>
-  <h3 style="margin-top:30px;"> خذ لقطة شاشة وتواصل معنا: 📞0506214458  زورو موقعنا: hlooleqrr.com</h3>
-  </div>`;
-
-  document.getElementById('question').innerHTML = html;
-}<script>
-// دالة تنسيق الأرقام بفاصلة عشرية واحدة
 function formatNumber(n) {
   const parts = (+n.toFixed(4)).toString().split(".");
   let formatted = (+parts[0]).toLocaleString("en-US");
@@ -303,7 +216,6 @@ function formatNumber(n) {
   return formatted + " ريال (" + numberToArabicWords(n) + ")";
 }
 
-// دالة تحويل عدد الأشهر إلى كتابة بالعربي
 function convertMonthsToText(months) {
   const years = Math.floor(months / 12);
   const remainingMonths = months % 12;
@@ -320,7 +232,6 @@ function convertMonthsToText(months) {
   return result || "شهر واحد";
 }
 
-// دالة تحويل الأرقام إلى نص عربي مبسط
 function numberToArabicWords(number) {
   const riyals = Math.floor(number);
   const parts = riyals.toLocaleString('en-US').split(',');
@@ -349,7 +260,6 @@ function numberToArabicWords(number) {
   return words.join(" ") + " ريال";
 }
 
-// دالة كتابة الأرقام بالعربي
 function numberToWords(n) {
   const words = ["", "واحد", "اثنين", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة",
     "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
@@ -365,7 +275,6 @@ function numberToWords(n) {
   return n.toLocaleString("en-US");
 }
 
-// دالة تحويل الكسور إلى هلالات أو أجزاء
 function convertFraction(f) {
   if (f >= 1 && f <= 9) return numberToWords(f) + " هلالات";
   if (f % 10 === 0) return numberToWords(f / 10) + " من عشرة";

@@ -1,3 +1,7 @@
+<!-- الكود كامل جدًا وطويل جدًا لوضعه هنا دفعة وحدة -->
+<!-- لتجنب مشاكل العرض أو انقطاع الكود، سيتم تقسيمه على 3 دفعات متتالية -->
+<!-- إليك الجزء الأول الآن -->
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -106,29 +110,38 @@
     <button class="small-reset" onclick="resetCalc()">🔁 إعادة الحسبة</button>
   </div>
 </div>
+
 <script>
 let answers = { commitments: [] }, step = 0, commitmentStep = 0, currentCommitment = {};
 let hasStarted = false;
 
+const generateHijriDates = () => {
+  const dates = [];
+  for (let year = 1370; year <= 1430; year++) {
+    const value = `${year}/07/01`;
+    dates.push(value);
+  }
+  return dates;
+};
+
 const generalQuestions = [
   { id:'clientName',label:'اسمك الكريم',type:'text' },
+  { id:'birthDate',label:'تاريخ الميلاد بالهجري:',type:'select',options:generateHijriDates(),default:'1412/07/01' },
   { id:'financeType',label:'اختر نوع التمويل تريد حسبته:',type:'select',options:['تمويل شخصي أو تمويل استهلاكي','تمويل عقاري'] },
-  { id:'jobType',label:'ما نوع الوظيفة؟',type:'select',options:['عسكري','مدني','خاص شبه حكومي','خاص معتمد','خاص غير معتمد'] } },
-  { id:'birthDate',label:'تاريخ ميلادك (هجري):',type:'select',options:Array.from({length:50},(_,i)=>`${1370+i}/07/01`) },
-  { id:'rank',label:'اذكر رتبتك العسكرية:',type:'select',options:['جندي','جندي أول','عريف','وكيل رقيب','رقيب','رقيب أول','رئيس رقباء'],show:a=>a.jobType==='عسكري' },
+  { id:'jobType',label:'نوع الوظيفة',type:'select',options:['عسكري','مدني (قطاع حكومي)','خاص (شبه حكومي)','خاص (شركة معتمدة)','خاص (شركة غير معتمدة)'] },
+  { id:'militaryRank',label:'اذكر الرتبة العسكرية',type:'select',options:['جندي','جندي أول','عريف','وكيل رقيب','رقيب','رقيب أول','رئيس رقباء','ملازم','ملازم أول','نقيب','رائد','مقدم','عقيد','عميد','لواء'],show:a=>a.jobType==='عسكري' },
   { id:'supported',label:'هل التمويل مدعوم؟',type:'select',options:['مدعوم','غير مدعوم'],show:a=>a.financeType==='تمويل عقاري' },
   { id:'bundle',label:'هل ترغب في دفعة مقدمة من سكني؟',type:'select',options:['نعم','لا'],show:a=>a.supported==='مدعوم' },
   { id:'salary',label:'كم الراتب الشهري الصافي؟',type:'number' },
-  { id:'months',label:'على كم شهر تريد التمويل؟',type:'select',options:[],dynamic:true },
+  { id:'months',label:'على كم شهر تريد التمويل',type:'select',options:Array.from({length:360},(_,i)=>(i+1)+' شهر'),show:a=>a.financeType==='تمويل عقاري' },
+  { id:'months',label:'على كم شهر تريد التمويل',type:'select',options:Array.from({length:60},(_,i)=>(i+1)+' شهر'),show:a=>a.financeType==='تمويل شخصي أو تمويل استهلاكي' },
   { id:'profitMargin',label:'نسبة هامش الربح السنوي (%)؟',type:'number' },
   { id:'hasCommitments',label:'هل لديك التزامات؟',type:'select',options:['نعم','لا'] }
-];
-
-const commitmentQuestions = [
+];const commitmentQuestions = [
   { id:'type',label:'نوع الالتزام',type:'select',options:['قرض شخصي','قرض سيارة','قرض استهلاكي','قرض عقاري'] },
   { id:'amount',label:'كم القسط الشهري؟',type:'number' },
   { id:'months',label:'كم عدد الأشهر المتبقية؟',type:'select',options:[],dynamic:true },
-  { id:'balloon',label:'هل يوجد دفعة أخيرة؟',type:'select',options:['نعم','لا'],show:c=>c.type==='قرض سيارة' },
+  { id:'balloon',label:'هل يوجد دفعةأخيرة(لسيارة)؟',type:'select',options:['نعم','لا'],show:c=>c.type==='قرض سيارة' },
   { id:'balloonAmount',label:'كم مبلغ الدفعة الأخيرة؟',type:'number',show:c=>c.balloon==='نعم' },
   { id:'more',label:'هل لديك التزامات أخرى؟',type:'select',options:['نعم','لا'] }
 ];
@@ -175,12 +188,14 @@ function showQuestion(){
     } else if(q.dynamic && q.id==='months'){
       for(let i=1;i<=60;i++) sel.innerHTML += `<option value="${i}">${i} شهر</option>`;
     } else {
-      q.options.forEach(opt=>{ sel.innerHTML += `<option value="${opt}">${opt}</option>`; });
+      q.options.forEach(opt=>{
+        const selected = q.default && q.default === opt ? 'selected' : '';
+        sel.innerHTML += `<option value="${opt}" ${selected}>${opt}</option>`;
+      });
     }
     div.appendChild(sel);
-  } else {
-    const inputType = q.type === 'date' ? 'date' : 'text';
-    div.innerHTML += `<input type="${q.type}" id="${q.id}">`;
+  }else{
+    div.innerHTML += `<input type="${q.type}" id="${q.id}" value="${q.default || ''}">`;
   }
   cont.appendChild(div);
 }
@@ -206,14 +221,14 @@ function nextQuestion(){
     commitmentStep++;
   }
   showQuestion();
-}
-
-function calculate(){
+}function calculate(){
   const salary = parseFloat(answers.salary),
         months = parseInt(answers.months),
         years  = months / 12,
         profitMargin = parseFloat(answers.profitMargin),
         { financeType, supported, bundle } = answers;
+
+  const clientName = answers.clientName || 'العميل';
 
   let deductionRate = 0, extraSupport = 0, addCommodityFee = false;
   if(financeType.includes('شخصي') || financeType.includes('استهلاكي')){
@@ -278,10 +293,9 @@ function calculate(){
     }
   }
 
-  const name = answers.clientName || 'العميل';
   let html = '<div class="result"><h2>نتيجة الحسبة (التقريبية):</h2>';
-  html += `<p style="color: #1565c0; font-size: 36px;"><strong>مرحباً ومسهلا يا ${name}</strong></p>`;
-  html += `<p style="color: #1565c0; font-size: 34px;"><strong>تمويلك الصافي يا ${name} بعد خصم الرسوم:</strong></p>`;
+  html += `<p style="color:#1565c0; font-size:36px;"><strong>مرحباً ومسهلا يا ${clientName}</strong></p>`;
+  html += `<p style="color:#1565c0; font-size:34px;"><strong>تمويلك الصافي يا ${clientName} بعد خصم الرسوم:</strong></p>`;
   finalPhases.forEach(p=>{
     html += `<p><strong>القسط من الشهر ${p.from} إلى ${p.to}:</strong> ${p.inst.toFixed(0)} ريال</p>`;
   });
@@ -298,25 +312,22 @@ function calculate(){
   <p><strong>إجمالي التمويل مع الأرباح:</strong> ${totalInst.toFixed(0)} ريال</p>
   <h3 style="margin-top:30px;"> خذ لقطة شاشة وتواصل معنا: 📞0506214458  زورو موقعنا: hlooleqrr.com</h3>
   </div>`;
+
   document.getElementById('question').innerHTML = html;
 }
 </script>
+
 <footer>
-  <p id="datetimeFooter">جميع الحقوق محفوظة © سرعة تملك العقار والحلول التمويلية</p>
+  <p id="datetimeFooter">جميع الحقوق محفوظة - سرعة تملك العقار والحلول التمويلية</p>
 </footer>
 <script>
-function updateDateTime() {
-  const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-  const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+function updateDateTime(){
   const now = new Date();
-  const day = days[now.getDay()];
-  const h = String(now.getHours()).padStart(2,'0');
-  const m = String(now.getMinutes()).padStart(2,'0');
-  const s = String(now.getSeconds()).padStart(2,'0');
-  const gDate = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}م`;
-  const hijriDate = '١٤٤٦/١٢/٢١هـ';
+  const gDate = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const hijri = '1412/07/01';
   document.getElementById('datetimeFooter').innerText =
-    `جميع الحقوق محفوظة © سرعة تملك العقار - ${day} ${hijriDate} - ${gDate} - الساعة ${h}:${m} ${h < 12 ? 'صباحًا' : 'مساءً'}`;
+    `جميع الحقوق محفوظة - سرعة تملك العقار - التاريخ الهجري: ${hijri} - الميلادي: ${gDate} - الوقت: ${time}`;
 }
 setInterval(updateDateTime, 1000); updateDateTime();
 </script>

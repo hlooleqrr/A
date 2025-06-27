@@ -113,8 +113,8 @@ let hasStarted = false;
 const generalQuestions = [
   { id:'clientName',label:'اسمك الكريم',type:'text' },
   { id:'financeType',label:'اختر نوع التمويل تريد حسبته:',type:'select',options:['تمويل شخصي أو تمويل استهلاكي','تمويل عقاري'] },
-  { id:'jobType',label:'ما نوع الوظيفة؟',type:'select',options:['عسكري','مدني','خاص شبه حكومي','خاص معتمد','خاص غير معتمد'] },
-  { id:'birthDate',label:'{ id:'birthDate',label:'تاريخ ميلادك (هجري):',type:'select',options:['1400/01/01','1400/02/01','1400/03/01', ...] }
+  { id:'jobType',label:'ما نوع الوظيفة؟',type:'select',options:['عسكري','مدني','خاص شبه حكومي','خاص معتمد','خاص غير معتمد'] } },
+  { id:'birthDate',label:'تاريخ ميلادك (هجري):',type:'select',options:Array.from({length:50},(_,i)=>`${1370+i}/07/01`) },
   { id:'rank',label:'اذكر رتبتك العسكرية:',type:'select',options:['جندي','جندي أول','عريف','وكيل رقيب','رقيب','رقيب أول','رئيس رقباء'],show:a=>a.jobType==='عسكري' },
   { id:'supported',label:'هل التمويل مدعوم؟',type:'select',options:['مدعوم','غير مدعوم'],show:a=>a.financeType==='تمويل عقاري' },
   { id:'bundle',label:'هل ترغب في دفعة مقدمة من سكني؟',type:'select',options:['نعم','لا'],show:a=>a.supported==='مدعوم' },

@@ -201,7 +201,8 @@ function showSorryPage(name){
     <p style="font-size:32px;">إذا متقاعد تواصل اتصال للاستفسار 😌</p>
     <p style="font-size:30px;">سامحنا ما فيه حسبة هنا</p>
   </div>`;
-
+}function handleStartOrReset(){
+  if(!hasStarted){
     hasStarted = true;
     document.getElementById('mainButton').style.display = 'none';
     document.getElementById('resetButtonContainer').style.display = 'block';
